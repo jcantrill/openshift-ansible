@@ -1,0 +1,26 @@
+---
+- name: Install logging
+  include: "{{ role_path }}/tasks/install_{{ item }}.yaml"
+  when: openshift_hosted_logging_install | default(true) | bool
+  with_items:
+    - logging
+#    - elasticsearch
+#    - kibana
+#    - curator
+    - fluentd
+
+- name: Creating API objects from generated templates
+  command: >
+    {{ openshift.common.client_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig apply -f {{file}} -n logging
+  with_fileglob:
+    - "{{mktemp.stdout}}/templates/*.yaml"
+  loop_control:
+    loop_var: file
+#  notify:
+#    - start cluster
+
+- name: Delete temp directory
+  file:
+    name: "{{ mktemp.stdout }}"
+    state: absent
+  changed_when: False

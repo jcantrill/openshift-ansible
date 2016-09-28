@@ -1,0 +1,42 @@
+---
+# This is the base configuration for installing the other components
+- name: Create temp directory for doing work in
+  command: mktemp -d /tmp/openshift-logging-ansible-XXXXXX
+  register: mktemp
+  changed_when: False
+
+- debug: msg="Created temp dir {{mktemp.stdout}}"
+
+- name: Copy the admin client config(s)
+  command: >
+    cp {{ openshift_master_config_dir }}/admin.kubeconfig {{ mktemp.stdout }}/admin.kubeconfig
+  changed_when: False
+
+- name: Check for logging project already exists
+  command: >
+    {{ openshift.common.client_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig get project logging -o jsonpath='{.metadata.name}'
+  register: logging_project_result
+  ignore_errors: True
+
+- name: "Create logging project"
+  command: >
+    {{ openshift.common.admin_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig new-project logging
+  when: logging_project_result.stdout == ""
+
+- include: generate_certs.yaml
+
+- name: Create temp directory for all our templates
+  file: path={{mktemp.stdout}}/templates state=directory mode=0755
+  changed_when: False
+
+- include: generate_secrets.yaml
+
+#- include: generate_configmaps.yaml
+
+- include: generate_services.yaml
+
+- name: Generate kibana-proxy oauth client
+  template: src=oauth-client.j2 dest={{mktemp.stdout}}/templates/oauth-client.yaml
+  vars:
+    secret: "{{oauth_secret.stdout}}"
+  when: oauth_secret.stdout is defined

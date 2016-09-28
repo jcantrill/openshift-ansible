@@ -1,0 +1,24 @@
+---
+kibana_hostname: kibana.example.com
+kibana_ops_hostname: kibana-ops.example.com
+image_prefix: docker.io/openshift/origin-
+image_version: latest
+public_master_url: https://localhost:8443
+master_url: https://kubernetes.default.svc.cluster.local
+es_cluster_size: 1
+fluentd_nodeselector: '"logging-infra-fluentd": "true"'
+logging_use_ops: False
+fluentd_cpu_limit: 100m
+fluentd_es_copy: False
+fluentd_use_journal: False
+journal_read_from_head: False
+es_host: logging-es
+es_port: 9200
+es_client_cert: /etc/fluent/keys/cert
+es_client_key: /etc/fluent/keys/key
+es_ca: /etc/fluent/keys/ca
+ops_host: logging-es
+ops_port: 9200
+ops_client_cert: /etc/fluent/keys/cert
+ops_client_key: /etc/fluent/keys/key
+ops_ca: /etc/fluent/keys/ca

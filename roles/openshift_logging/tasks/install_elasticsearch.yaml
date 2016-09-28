@@ -1,0 +1,3 @@
+---
+- name: Check ES Install
+  when: "{{ openshift_logging.facts.es.deploymentconfigs | list | count }} == 0"

@@ -1,0 +1,49 @@
+---
+- name: Generating logging-es service
+  template: src=service.j2 dest={{mktemp.stdout}}/templates/logging-es-svc.yaml
+  vars:
+    service_name: logging-es
+    service_port: 9200
+    service_targetPort: restapi
+    service_component: es
+
+- name: Generating logging-es-cluster service
+  template: src=service.j2 dest={{mktemp.stdout}}/templates/logging-es-cluster-svc.yaml
+  vars:
+    service_name: logging-es-cluster
+    service_port: 9300
+    service_component: es
+
+- name: Generating logging-kibana service
+  template: src=service.j2 dest={{mktemp.stdout}}/templates/logging-kibana-svc.yaml
+  vars:
+    service_name: logging-kibana
+    service_port: 443
+    service_targetPort: oaproxy
+    service_component: kibana
+
+- name: Generating logging-es-ops service
+  template: src=service.j2 dest={{mktemp.stdout}}/templates/logging-es-ops-svc.yaml
+  vars:
+    service_name: logging-es-ops
+    service_port: 9200
+    service_targetPort: restapi
+    service_component: es-ops
+  when: logging_use_ops
+
+- name: Generating logging-es-ops-cluster service
+  template: src=service.j2 dest={{mktemp.stdout}}/templates/logging-es-ops-cluster-svc.yaml
+  vars:
+    service_name: logging-es-ops-cluster
+    service_port: 9300
+    service_component: es-ops
+  when: logging_use_ops
+
+- name: Generating logging-kibana-ops service
+  template: src=service.j2 dest={{mktemp.stdout}}/templates/logging-kibana-ops-svc.yaml
+  vars:
+    service_name: logging-kibana-ops
+    service_port: 443
+    service_targetPort: oaproxy
+    service_component: kibana-ops
+  when: logging_use_ops
