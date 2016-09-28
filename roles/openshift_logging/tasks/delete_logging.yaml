@@ -1,0 +1,34 @@
+---
+# delete the support items that were created
+- name: delete logging support objects
+  - command: "{{ openshift.common.client_binary }} process logging-support-template | {{ openshift.common.client_binary }} delete -f -"
+    ignore_errors: yes
+
+# delete the deployment objects that we had created
+- name: delete logging api objects
+  - command: "{{ openshift.common.client_binary }} delete {{ item }} --selector logging-infra"
+    with_items:
+      - dc
+      - rc
+      - svc
+      - routes
+      - templates
+      - daemonset
+    ignore_errors: yes
+
+# delete any image streams that we may have created
+- name: delete logging is
+  - command: "{{ openshift.common.client_binary }} delete is -l logging-infra=support"
+    ignore_errors: yes
+
+# delete our old secrets
+- name: delete logging secrets
+  - command: "{{ openshift.common.client_binary }} delete secret {{ item }}"
+    with_items:
+      - logging-fluentd
+      - logging-elasticsearch
+      - logging-kibana
+      - logging-kibana-proxy
+      - logging-curator
+      - logging-curator-ops
+    ignore_errors: yes

@@ -1,0 +1,74 @@
+---
+- name: stop fluentd
+  #listen: "stop logging"
+  - block:
+    - command: "{{ openshift.common.client_binary }} label node {{ host }} {{ fluentd_nodeselector }}-"
+      register: scale_output
+      failed_when: scale_ouput.rc == 1 and 'exists' not in scale_ouput.stderr
+
+    - action: command "{{ openshift.common.client_binary }} oc get pod -l component=fluentd --template='{{.status.phase}}'"
+      register: pod_phase
+      until: pod_phase.stdout == ""
+      retries: 60
+      delay: 5
+      failed_when: pod_phase.stdout != ""
+
+    rescue:
+      - debug: msg="Unable to scale down Fluentd"
+
+- name: stop kibana
+  #listen: "stop logging"
+  - block:
+    - command: "{{ openshift.common.client_binary }} get dc -l component=kibana -o name"
+      register: kibana_dc
+
+    - command: "{{ openshift.common.client_binary }} scale {{ item }} --replicas=0"
+      with_items: "{{ kibana_dc }}"
+
+    - action: command "{{ openshift.common.client_binary }} oc get pod -l component=kibana --template='{{.status.phase}}'"
+      register: pod_phase
+      until: pod_phase.stdout == ""
+      retries: 6
+      delay: 5
+      failed_when: pod_phase.stdout != ""
+
+    rescue:
+    - debug: msg="Unable to scale down Kibana"
+
+- name: stop curator
+  #listen: "stop logging"
+  - block:
+    - command: "{{ openshift.common.client_binary }} get dc -l component=curator -o name"
+      register: curator_dc
+
+    - command: "{{ openshift.common.client_binary }} scale {{ item }} --replicas=0"
+      with_items: "{{ curator_dc }}"
+
+    - action: command "{{ openshift.common.client_binary }} oc get pod -l component=curator --template='{{.status.phase}}'"
+      register: pod_phase
+      until: pod_phase.stdout == ""
+      retries: 6
+      delay: 5
+      failed_when: pod_phase.stdout != ""
+
+    rescue:
+    - debug: msg="Unable to scale down Curator"
+
+- name: stop elasticsearch
+  #listen: "stop logging"
+  - block:
+    - command: "{{ openshift.common.client_binary }} get dc -l component=es -o name"
+      register: elasticsearch_dc
+
+    - command: "{{ openshift.common.client_binary }} scale {{ item }} --replicas=0"
+      with_items: "{{ elasticsearch_dc }}"
+
+    - action: command "{{ openshift.common.client_binary }} oc get pod -l component=es --template='{{.status.phase}}'"
+      register: pod_phase
+      until: pod_phase.stdout == ""
+      retries: 120
+      delay: 5
+      failed_when: pod_phase.stdout != ""
+
+    rescue:
+    - debug: msg="Unable to scale down Elasticsearch"

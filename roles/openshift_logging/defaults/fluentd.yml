@@ -1,0 +1,6 @@
+---
+image_prefix: docker.io/openshift/origin-
+image_version: latest
+public_master_url: https://localhost:8443
+master_url: https://kubernetes.default.svc.cluster.local
+fluentd_nodeselector: logging-infra-fluentd=true

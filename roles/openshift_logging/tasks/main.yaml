@@ -1,0 +1,18 @@
+---
+- name: Install logging
+  include: "{{ role_path }}/tasks/install_{{ item }}.yaml"
+  when: openshift_hosted_logging_install | default(true) | bool
+  with_items:
+    - logging
+#    - elasticsearch
+#    - kibana
+#    - curator
+#    - fluentd
+#  notify:
+#    - start cluster
+
+- name: Delete temp directory
+  file:
+    name: "{{ mktemp.stdout }}"
+    state: absent
+  changed_when: False

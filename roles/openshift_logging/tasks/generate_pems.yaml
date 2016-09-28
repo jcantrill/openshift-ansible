@@ -1,0 +1,25 @@
+---
+- local_action: stat path="{{mktemp.stdout}}/{{component}}.key"
+  register: key_file
+  become: no
+
+- local_action: stat path="{{mktemp.stdout}}/{{component}}.crt"
+  register: cert_file
+  become: no
+
+- name: Creating cert req for {{component}}
+  command: openssl req -out {{mktemp.stdout}}/{{component}}.csr -new -newkey rsa:2048 -keyout {{mktemp.stdout}}/{{component}}.key -subj "/CN={{component}}/OU=OpenShift/O=Logging/subjectAltName=DNS.1=localhost{{cert_ext.stdout}}" -days 712 -nodes
+  when:
+    - not key_file.stat.exists
+    - cert_ext.stdout is defined
+
+- name: Creating cert req for {{component}}
+  command: openssl req -out {{mktemp.stdout}}/{{component}}.csr -new -newkey rsa:2048 -keyout {{mktemp.stdout}}/{{component}}.key -subj "/CN={{component}}/OU=OpenShift/O=Logging" -days 712 -nodes
+  when:
+    - not key_file.stat.exists
+    - cert_ext.stdout is undefined
+
+- name: Sign cert request with CA for {{component}}
+  command: openssl ca -in {{mktemp.stdout}}/{{component}}.csr -notext -out {{mktemp.stdout}}/{{component}}.crt -config {{mktemp.stdout}}/signing.conf -extensions v3_req -batch -extensions server_ext
+  when:
+    - not cert_file.stat.exists
