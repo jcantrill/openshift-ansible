@@ -60,3 +60,11 @@
    - {name: 'logging-es', certs: '{{logging_es_certs.stdout}}'}
   loop_control:
     loop_var: node
+
+- name: Generate proxy session
+  shell: tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c 200
+  register: proxy_session
+
+- name: Generate oauth client secret
+  shell: tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c 64
+  register: oauth_secret

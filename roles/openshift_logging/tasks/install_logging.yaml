@@ -18,3 +18,9 @@
 #- include: generate_configmaps.yaml
 
 - include: generate_services.yaml
+
+- name: Generate kibana-proxy oauth client
+  template: src=oauth-client.j2 dest={{mktemp.stdout}}/templates/oauth-client.yaml
+  vars:
+    secret: "{{oauth_secret.stdout}}"
+  when: oauth_secret.stdout is defined

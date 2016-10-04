@@ -1,7 +1,3 @@
 ---
 kibana_hostname: kibana.example.com
 kibana_ops_hostname: kibana-ops.example.com
-image_prefix: docker.io/openshift/origin-
-image_version: latest
-public_master_url: https://localhost:8443
-master_url: https://kubernetes.default.svc.cluster.local

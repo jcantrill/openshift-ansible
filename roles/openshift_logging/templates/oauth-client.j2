@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: OAuthClient
+metadata:
+  name: kibana-proxy
+secret: {{secret}}
+redirectURIs:
+- https://{{kibana_hostname}}
+- https://{{kibana_ops_hostname}}
+scopeRestrictions:
+- literals:
+  - user:info
+  - user:check-access
+  - user:list-projects

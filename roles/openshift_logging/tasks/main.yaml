@@ -7,7 +7,7 @@
 #    - elasticsearch
 #    - kibana
 #    - curator
-#    - fluentd
+    - fluentd
 #  notify:
 #    - start cluster
 
