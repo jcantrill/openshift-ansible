@@ -1,0 +1,15 @@
+---
+- name: Generate ClusterRoles
+  template: src=clusterrole.j2 dest={{mktmp.stdout}}/logging-{{obj_name}}-clusterrole.yaml
+  vars:
+    obj_name: daemonset-admin
+    rules:
+      - resources: [daemonsets]
+        api_groups: [extensions]
+        verbs:
+          - create
+          - get
+          - list
+          - watch
+          - delete
+          - update
