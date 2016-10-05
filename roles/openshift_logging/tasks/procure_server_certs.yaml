@@ -10,7 +10,7 @@
   when: hostnames is undefined and {{ procure_component }}_crt is defined and {{ procure_component }}_key is defined
 
 - name: Procure Server cert for {{ procure_component }}
-  command: "{{ openshift.common.admin_binary }} ca create-server-cert --key={{mktemp.stdout}}/{{procure_component}}.key --cert={{mktemp.stdout}}/{{procure_component}}.crt --hostnames={{hostnames|quote}} --signer-cert={{mktemp.stdout}}/ca.crt --signer-key={{mktemp.stdout}}/ca.key --signer-serial={{mktemp.stdout}}/ca.serial.txt"
+  command: "{{ openshift.common.admin_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig ca create-server-cert --key={{mktemp.stdout}}/{{procure_component}}.key --cert={{mktemp.stdout}}/{{procure_component}}.crt --hostnames={{hostnames|quote}} --signer-cert={{mktemp.stdout}}/ca.crt --signer-key={{mktemp.stdout}}/ca.key --signer-serial={{mktemp.stdout}}/ca.serial.txt"
   when: hostnames is defined
 
 - name: Procure Server cert for {{ procure_component }}

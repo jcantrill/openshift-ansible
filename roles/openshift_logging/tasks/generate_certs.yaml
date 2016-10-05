@@ -1,7 +1,7 @@
 ---
 # we will ensure our secrets and configmaps are set up here first
 - name: Generate certificates
-  command: "{{ openshift.common.admin_binary }} ca create-signer-cert --key={{mktemp.stdout}}/ca.key --cert={{mktemp.stdout}}/ca.crt --serial={{mktemp.stdout}}/ca.serial.txt --name=logging-signer-test"
+  command: "{{ openshift.common.admin_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig ca create-signer-cert --key={{mktemp.stdout}}/ca.key --cert={{mktemp.stdout}}/ca.crt --serial={{mktemp.stdout}}/ca.serial.txt --name=logging-signer-test"
 
 - name: Copy base signing configuration file
   copy: src=signing.conf dest={{mktemp.stdout}}/signing.conf
@@ -63,7 +63,7 @@
 
 - name: Generate proxy session
   shell: tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c 200
-  register: proxy_session
+  register: session_secret
 
 - name: Generate oauth client secret
   shell: tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c 64
