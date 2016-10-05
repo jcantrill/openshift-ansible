@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ClusterRole
+metadata:
+  name: {{obj_name}}
+rules:
+{% for rule in rules %}
+- resources:
+{% for kind in rule.resources %}
+    - {{ kind }}
+{% endfor %}
+  apiGroups:
+{% for group in rule.api_groups %}
+    - {{ group }}
+{% endfor %}
+  verbs:
+{% for verb in rule.verbs %}
+    - {{ verb }}
+{% endfor %}
+{% endfor %}

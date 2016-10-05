@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{pvc_name}}
+{% if pvc_annotations %}
+  annotations:
+{% for key,value in pvc_annotations.iteritems() %}
+    {{key}}: {{value}}
+{% endfor %}
+{% endif %}
+spec:
+  accessModes:
+{% for mode in pvc_access_modes %}
+    - {{ mode }}
+{% endfor %}
+  resources:
+    requests:
+      storage: {{pvc_size}}
