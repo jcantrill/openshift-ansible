@@ -1,0 +1,50 @@
+---
+- name: Generate kibana deploymentconfig
+  template: src=kibana.j2 dest={{mktemp.stdout}}/logging-kibana-dc.yaml
+  vars:
+    component: kibana
+    deploy_name: "logging-{{component}}"
+    image: "{{image_prefix}}logging-kibana:{{image_version}}"
+    proxy_image: "{{image_prefix}}logging-auth-proxy:{{image_version}}"
+
+- name: Generate OPS kibana deploymentconfig
+  template: src=kibana.j2 dest={{mktemp.stdout}}/logging-kibana-ops-dc.yaml
+  vars:
+    component: kibana-ops
+    deploy_name: "logging-{{component}}"
+    image: "{{image_prefix}}logging-kibana:{{image_version}}"
+    proxy_image: "{{image_prefix}}logging-auth-proxy:{{image_version}}"
+    es_host: logging-es-ops
+
+- name: Generate elasticsearch deploymentconfig
+  template: src=es.j2 dest={{mktemp.stdout}}/logging-es-dc.yaml
+  vars:
+    component: es
+    deploy_name_prefix: "logging-{{component}}"
+    deploy_name: "{{deploy_name_prefix}}-abc123"
+    image: "{{image_prefix}}logging-elasticsearch:{{image_version}}"
+    es_cluster_name: "{{component}}"
+
+- name: Generate OPS elasticsearch deploymentconfig
+  template: src=es.j2 dest={{mktemp.stdout}}/logging-es-ops-dc.yaml
+  vars:
+    component: es-ops
+    deploy_name_prefix: "logging-{{component}}"
+    deploy_name: "{{deploy_name_prefix}}-abc123"
+    image: "{{image_prefix}}logging-elasticsearch:{{image_version}}"
+    es_cluster_name: "{{component}}"
+
+- name: Generate curator deploymentconfig
+  template: src=curator.j2 dest={{mktemp.stdout}}/logging-curator-dc.yaml
+  vars:
+    component: curator
+    deploy_name: "logging-{{component}}"
+    image: "{{image_prefix}}logging-curator:{{image_version}}"
+
+- name: Generate OPS curator deploymentconfig
+  template: src=curator.j2 dest={{mktemp.stdout}}/logging-curator-ops-dc.yaml
+  vars:
+    component: curator-ops
+    deploy_name: "logging-{{component}}"
+    image: "{{image_prefix}}logging-curator:{{image_version}}"
+    es_host: logging-es-ops

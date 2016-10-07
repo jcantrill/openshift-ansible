@@ -1,24 +1,43 @@
 ---
-kibana_hostname: kibana.example.com
-kibana_ops_hostname: kibana-ops.example.com
 image_prefix: docker.io/openshift/origin-
 image_version: latest
-public_master_url: https://localhost:8443
+logging_use_ops: false
 master_url: https://kubernetes.default.svc.cluster.local
-es_cluster_size: 1
+public_master_url: https://localhost:8443
+
+curator_default_days: 30
+curator_run_hour: 0
+curator_run_minute: 0
+curator_run_timezone: UTC
+curator_script_log_level: INFO
+curator_log_level: ERROR
+    
+kibana_hostname: kibana.example.com
+kibana_ops_hostname: kibana-ops.example.com
+kibana_proxy_debug: false
+
 fluentd_nodeselector: '"logging-infra-fluentd": "true"'
 logging_use_ops: False
 fluentd_cpu_limit: 100m
 fluentd_es_copy: False
 fluentd_use_journal: False
 journal_read_from_head: False
+
 es_host: logging-es
 es_port: 9200
+es_ca: /etc/fluent/keys/ca
 es_client_cert: /etc/fluent/keys/cert
 es_client_key: /etc/fluent/keys/key
-es_ca: /etc/fluent/keys/ca
-ops_host: logging-es
+es_cluster_size: 1
+es_instance_ram: 1024M
+es_pvc_dynamic: False
+es_recover_after_time: 5m
+es_storage_group: 65534
+
+ops_host: logging-es-ops
 ops_port: 9200
 ops_client_cert: /etc/fluent/keys/cert
 ops_client_key: /etc/fluent/keys/key
 ops_ca: /etc/fluent/keys/ca
+
+annotations: []

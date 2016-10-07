@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: RoleBinding
+metadata:
+  name: {{obj_name}}
+roleRef:
+  kind: {{ roleRef.kind }}
+  name: {{ roleRef.name }}
+subjects:
+{% for sub in subjects %}
+  - kind: {{ sub.kind }}
+    name: {{ sub.name }}
+{% endfor %}
