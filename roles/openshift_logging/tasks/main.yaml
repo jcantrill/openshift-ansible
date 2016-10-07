@@ -4,9 +4,9 @@
   when: openshift_hosted_logging_install | default(true) | bool
   with_items:
     - logging
-#    - elasticsearch
-#    - kibana
-#    - curator
+    - elasticsearch
+    - kibana
+    - curator
     - fluentd
 
 - name: Creating API objects from generated templates

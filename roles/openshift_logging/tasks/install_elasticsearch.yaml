@@ -1,3 +1,21 @@
 ---
-- name: Check ES Install
-  when: "{{ openshift_logging.facts.es.deploymentconfigs | list | count }} == 0"
+#- name: Check ES Install
+#  when: "{{ openshift_logging.facts.es.deploymentconfigs | list | count }} == 0"
+- name: Generate elasticsearch deploymentconfig
+  template: src=es.j2 dest={{mktemp.stdout}}/templates/logging-es-dc.yaml
+  vars:
+    component: es
+    deploy_name_prefix: "logging-{{component}}"
+    deploy_name: "{{deploy_name_prefix}}-abc123"
+    image: "{{image_prefix}}logging-elasticsearch:{{image_version}}"
+    es_cluster_name: "{{component}}"
+
+- name: Generate OPS elasticsearch deploymentconfig
+  template: src=es.j2 dest={{mktemp.stdout}}/templates/logging-es-ops-dc.yaml
+  vars:
+    component: es-ops
+    deploy_name_prefix: "logging-{{component}}"
+    deploy_name: "{{deploy_name_prefix}}-abc123"
+    image: "{{image_prefix}}logging-elasticsearch:{{image_version}}"
+    es_cluster_name: "{{component}}"
+  when: logging_use_ops
