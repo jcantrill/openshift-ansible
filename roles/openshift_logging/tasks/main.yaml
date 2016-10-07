@@ -8,6 +8,14 @@
 #    - kibana
 #    - curator
     - fluentd
+
+- name: Creating API objects from generated templates
+  command: >
+    {{ openshift.common.client_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig apply -f {{file}} -n logging
+  with_fileglob:
+    - "{{mktemp.stdout}}/templates/*.yaml"
+  loop_control:
+    loop_var: file
 #  notify:
 #    - start cluster
 
