@@ -31,7 +31,7 @@
 
 - include: generate_secrets.yaml
 
-#- include: generate_configmaps.yaml
+- include: generate_configmaps.yaml
 
 - include: generate_services.yaml
 
@@ -40,3 +40,11 @@
   vars:
     secret: "{{oauth_secret.stdout}}"
   when: oauth_secret.stdout is defined
+
+- include: generate_clusterroles.yaml
+
+- include: generate_pvcs.yaml
+
+- include: generate_rolebindings.yaml
+
+- include: generate_serviceaccounts.yaml

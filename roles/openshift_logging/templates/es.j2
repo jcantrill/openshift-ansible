@@ -45,28 +45,33 @@ spec:
               containerPort: 9300
               name: "cluster"
           env:
-            - 
+            -
+              name: "NAMESPACE"
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            -
               name: "KUBERNETES_TRUST_CERT"
               value: "true"
-            - 
+            -
               name: "SERVICE_DNS"
               value: "logging-{{es_cluster_name}}-cluster"
-            - 
+            -
               name: "CLUSTER_NAME"
               value: "logging-{{es_cluster_name}}"
-            - 
+            -
               name: "INSTANCE_RAM"
               value: "{{es_instance_ram}}"
-            - 
+            -
               name: "NODE_QUORUM"
               value: "{{es_node_quorum}}"
-            - 
+            -
               name: "RECOVER_AFTER_NODES"
               value: "{{es_recover_after_nodes}}"
-            - 
+            -
               name: "RECOVER_EXPECTED_NODES"
               value: "{{es_recover_expected_nodes}}"
-            - 
+            -
               name: "RECOVER_AFTER_TIME"
               value: "{{es_recover_after_time}}"
           volumeMounts:

@@ -1,6 +1,6 @@
 ---
 - name: Generating PersistentVolumeClaims
-  template: src=pvc.j2 dest={{mktemp.stdout}}/logging-{{obj_name}}-pvc.yaml
+  template: src=pvc.j2 dest={{mktemp.stdout}}/templates/logging-{{obj_name}}-pvc.yaml
   vars:
     obj_name: replaceme
     size: 100G
@@ -9,7 +9,7 @@
   when: not es_pvc_dynamic
 
 - name: Generating PersistentVolumeClaims - Dynamic
-  template: src=pvc.j2 dest={{mktemp.stdout}}/logging-{{obj_name}}-pvc.yaml
+  template: src=pvc.j2 dest={{mktemp.stdout}}/templates/logging-{{obj_name}}-pvc.yaml
   vars:
     obj_name: replaceme-also
     annotations:
