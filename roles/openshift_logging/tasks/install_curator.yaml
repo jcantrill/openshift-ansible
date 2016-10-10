@@ -3,6 +3,7 @@
   template: src=curator.j2 dest={{mktemp.stdout}}/templates/logging-curator-dc.yaml
   vars:
     component: curator
+    logging_component: curator
     deploy_name: "logging-{{component}}"
     image: "{{image_prefix}}logging-curator:{{image_version}}"
 
@@ -10,6 +11,7 @@
   template: src=curator.j2 dest={{mktemp.stdout}}/templates/logging-curator-ops-dc.yaml
   vars:
     component: curator-ops
+    logging_component: curator
     deploy_name: "logging-{{component}}"
     image: "{{image_prefix}}logging-curator:{{image_version}}"
     es_host: logging-es-ops

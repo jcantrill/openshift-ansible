@@ -3,6 +3,7 @@
   template: src=kibana.j2 dest={{mktemp.stdout}}/templates/logging-kibana-dc.yaml
   vars:
     component: kibana
+    logging_component: kibana
     deploy_name: "logging-{{component}}"
     image: "{{image_prefix}}logging-kibana:{{image_version}}"
     proxy_image: "{{image_prefix}}logging-auth-proxy:{{image_version}}"
@@ -11,6 +12,7 @@
   template: src=kibana.j2 dest={{mktemp.stdout}}/templates/logging-kibana-ops-dc.yaml
   vars:
     component: kibana-ops
+    logging_component: kibana
     deploy_name: "logging-{{component}}"
     image: "{{image_prefix}}logging-kibana:{{image_version}}"
     proxy_image: "{{image_prefix}}logging-auth-proxy:{{image_version}}"
