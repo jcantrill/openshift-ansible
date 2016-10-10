@@ -1,4 +1,6 @@
 ---
+- name: Gather OpenShift Logging Facts
+  openshift_logging_facts: "" 
 - name: Install logging
   include: "{{ role_path }}/tasks/install_{{ item }}.yaml"
   when: openshift_hosted_logging_install | default(true) | bool
