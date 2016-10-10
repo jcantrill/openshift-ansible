@@ -1,6 +1,21 @@
 ---
+- name: Create temp directory for doing work in
+  command: mktemp -d /tmp/openshift-logging-ansible-XXXXXX
+  register: mktemp
+  changed_when: False
+
+- debug: msg="Created temp dir {{mktemp.stdout}}"
+
+- name: Copy the admin client config(s)
+  command: >
+    cp {{ openshift_master_config_dir }}/admin.kubeconfig {{ mktemp.stdout }}/admin.kubeconfig
+  changed_when: False
+
 - name: Gather OpenShift Logging Facts
-  openshift_logging_facts: "" 
+  openshift_logging_facts: 
+    oc_bin: "{{openshift.common.client_binary}}"
+    admin_kubeconfig: "{{mktemp.stdout}}/admin.kubeconfig"
+
 - name: Install logging
   include: "{{ role_path }}/tasks/install_{{ item }}.yaml"
   when: openshift_hosted_logging_install | default(true) | bool
