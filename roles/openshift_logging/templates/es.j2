@@ -6,18 +6,21 @@ metadata:
     provider: openshift
     component: "{{component}}"
     deployment: "{{deploy_name}}"
+    logging-infra: "{{logging_component}}"
 spec:
   replicas: 1
   selector:
     provider: openshift
     component: "{{component}}"
     deployment: "{{deploy_name}}"
+    logging-infra: "{{logging_component}}"
   strategy:
     type: Recreate
   template:
     metadata:
       name: "{{deploy_name}}"
       labels:
+        logging-infra: "{{logging_component}}"
         provider: openshift
         component: "{{component}}"
         deployment: "{{deploy_name}}"

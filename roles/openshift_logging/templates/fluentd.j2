@@ -5,6 +5,7 @@ metadata:
   labels:
     provider: openshift
     component: "{{daemonset_component}}"
+    logging-infra: "{{daemonset_component}}"
 spec:
   selector:
     matchLabels:
@@ -18,6 +19,7 @@ spec:
     metadata:
       name: "{{daemonset_container_name}}"
       labels:
+        logging-infra: "{{daemonset_component}}"
         provider: openshift
         component: "{{daemonset_component}}"
     spec:

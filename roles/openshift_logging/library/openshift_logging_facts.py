@@ -4,9 +4,9 @@ DOCUMENTATION = """
 module: openshift_logging_facts
 version_added: ""
 short_description: Gather facts about the OpenShift logging stack
-description: 
+description:
   - Determine the current facts about the OpenShift logging stack (e.g. cluster size)
-options: 
+options:
 author: Red Hat, Inc
 """
 
@@ -35,10 +35,11 @@ LOGGING_SELECTOR=LOGGING_INFRA_KEY + "=" + "support"
 ROUTE_SELECTOR = "component=support,logging-infra=support,provider=openshift"
 
 class OCBaseCommand(object):
-    def __init__(self, binary, kubeconfig):
+    def __init__(self, binary, kubeconfig, namespace):
         self.binary = binary
         self.kubeconfig = kubeconfig
         self.user = self.getSystemAdmin(self.kubeconfig)
+        self.namespace = namespace
 
     def getSystemAdmin(self,kubeconfig):
         with open(kubeconfig,'r') as f:
@@ -49,7 +50,7 @@ class OCBaseCommand(object):
         raise Exception("Unable to find system:admin in: " + kubeconfig)
 
     def oc(self, sub, kind, namespace=None, name=None,addOptions=[]):
-        cmd = [self.binary, sub, kind] 
+        cmd = [self.binary, sub, kind]
         if name != None:
             cmd = cmd + [name]
         if namespace != None:
@@ -59,15 +60,15 @@ class OCBaseCommand(object):
         out, err = process.communicate(cmd)
         if len(err) > 0:
             raise Exception(err)
-        
+
         return json.loads(out)
-    
+
 class OpenshiftLoggingFacts(OCBaseCommand):
 
     name = "facts"
 
-    def __init__(self, logger, binary, kubeconfig):
-        super(OpenshiftLoggingFacts, self).__init__(binary, kubeconfig)
+    def __init__(self, logger, binary, kubeconfig, namespace):
+        super(OpenshiftLoggingFacts, self).__init__(binary, kubeconfig, namespace)
         self.logger = logger
         self.facts = dict()
 
@@ -78,8 +79,8 @@ class OpenshiftLoggingFacts(OCBaseCommand):
             self.facts[comp][kind] = dict()
         self.facts[comp][kind][name] = facts
 
-    def factsForRoutes(self):
-        routeList =  self.oc("get","routes", addOptions=["--all-namespaces", "-l",ROUTE_SELECTOR])
+    def factsForRoutes(self, namespace):
+        routeList =  self.oc("get","routes", namespace=namespace, addOptions=["-l",ROUTE_SELECTOR])
         if len(routeList["items"]) == 0:
             return None
         for route in routeList["items"]:
@@ -87,9 +88,7 @@ class OpenshiftLoggingFacts(OCBaseCommand):
             comp = self.comp(name)
             if comp != None:
                 self.addFactsFor(comp, "routes", name, dict(host=route["spec"]["host"]))
-        namespace = routeList["items"][0]["metadata"]["namespace"]
         self.facts["agl_namespace"] = namespace
-        return namespace
 
 
     def factsForDaemonsets(self, namespace):
@@ -108,7 +107,7 @@ class OpenshiftLoggingFacts(OCBaseCommand):
                 nodeSelector = spec["nodeSelector"],
                 serviceAccount = spec["serviceAccount"],
                 terminationGracePeriodSeconds = spec["terminationGracePeriodSeconds"]
-            ) 
+            )
             self.addFactsFor(comp, "daemonsets", name, result)
 
     def factsForDeploymentConfigs(self, namespace):
@@ -137,7 +136,7 @@ class OpenshiftLoggingFacts(OCBaseCommand):
                     facts["containers"][container["name"]] = dict(
                         image = container["image"],
                         resources = container["resources"],
-                    )        
+                    )
                 self.addFactsFor(comp,"deploymentconfigs",name,facts)
 
     def factsForServices(self, namespace):
@@ -204,40 +203,53 @@ class OpenshiftLoggingFacts(OCBaseCommand):
             if comp != None and namespace == item["namespace"]:
                 self.addFactsFor(comp, "clusterrolebindings", "cluster-readers", dict())
 
+# this needs to end up nested under the service account...
+    def factsForRoleBindings(self, namespace):
+        role = self.oc("get", "rolebindings", namespace=namespace, name="logging-elasticsearch-view-role")
+        if len(role["subjects"]) == 0:
+            return
+        for item in role["subjects"]:
+            comp = self.comp(item["name"])
+            if comp != None and namespace == item["namespace"]:
+                self.addFactsFor(comp, "rolebindings", "logging-elasticsearch-view-role", dict())
+
     def comp(self, name):
         if name.startswith("logging-curator"):
-            return "curator" 
+            return "curator"
         elif name.startswith("logging-kibana") or name.startswith("kibana"):
-            return "kibana" 
+            return "kibana"
         elif name.startswith("logging-fluentd") or name.endswith("aggregated-logging-fluentd"):
-            return "fluentd" 
+            return "fluentd"
         elif name.startswith("logging-es") or name.startswith("logging-elasticsearch"):
-            return "elasticsearch" 
+            return "elasticsearch"
         else:
             return None
 
     def do(self):
-        namespace = self.factsForRoutes()
-        self.factsForDaemonsets(namespace)
-        self.factsForDeploymentConfigs(namespace)
-        self.factsForServices(namespace)
-        self.factsForConfigMaps(namespace)
-        self.factsForSCCs(namespace)
-        self.factsForOAuthClients(namespace)
-        self.factsForClusterRoleBindings(namespace)
-        self.factsForSecrets(namespace)
+        self.factsForRoutes(self.namespace)
+        self.factsForDaemonsets(self.namespace)
+        self.factsForDeploymentConfigs(self.namespace)
+        self.factsForServices(self.namespace)
+        self.factsForConfigMaps(self.namespace)
+        self.factsForSCCs(self.namespace)
+        self.factsForOAuthClients(self.namespace)
+        self.factsForClusterRoleBindings(self.namespace)
+        self.factsForRoleBindings(self.namespace)
+        self.factsForSecrets(self.namespace)
+
         return self.facts
 
 def main():
     module = AnsibleModule(
         argument_spec=dict(
             admin_kubeconfig = {"required": True, "type": "str"},
-            oc_bin = {"required": True, "type": "str"}
+            oc_bin = {"required": True, "type": "str"},
+            logging_namespace = {"required": True, "type": "str"}
         ),
         supports_check_mode = False
     )
-    try: 
-        cmd = OpenshiftLoggingFacts(module, module.params['oc_bin'], module.params['admin_kubeconfig'])
+    try:
+        cmd = OpenshiftLoggingFacts(module, module.params['oc_bin'], module.params['admin_kubeconfig'],module.params['logging_namespace'])
         module.exit_json(
             openshift_logging_facts  = cmd.do()
         )
@@ -247,4 +259,3 @@ def main():
 from ansible.module_utils.basic import *
 if __name__ == '__main__':
     main()
-

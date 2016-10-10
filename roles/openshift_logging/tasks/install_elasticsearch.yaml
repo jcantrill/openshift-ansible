@@ -5,6 +5,7 @@
   template: src=es.j2 dest={{mktemp.stdout}}/templates/logging-es-dc.yaml
   vars:
     component: es
+    logging_component: elasticsearch
     deploy_name_prefix: "logging-{{component}}"
     deploy_name: "{{deploy_name_prefix}}-abc123"
     image: "{{image_prefix}}logging-elasticsearch:{{image_version}}"
@@ -14,6 +15,7 @@
   template: src=es.j2 dest={{mktemp.stdout}}/templates/logging-es-ops-dc.yaml
   vars:
     component: es-ops
+    logging_component: elasticsearch
     deploy_name_prefix: "logging-{{component}}"
     deploy_name: "{{deploy_name_prefix}}-abc123"
     image: "{{image_prefix}}logging-elasticsearch:{{image_version}}"
