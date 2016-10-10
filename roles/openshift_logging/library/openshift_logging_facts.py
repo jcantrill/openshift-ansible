@@ -203,6 +203,16 @@ class OpenshiftLoggingFacts(OCBaseCommand):
             if comp != None and namespace == item["namespace"]:
                 self.addFactsFor(comp, "clusterrolebindings", "cluster-readers", dict())
 
+# this needs to end up nested under the service account...
+    def factsForRoleBindings(self, namespace):
+        role = self.oc("get", "rolebindings", namespace=namespace, name="logging-elasticsearch-view-role")
+        if len(role["subjects"]) == 0:
+            return
+        for item in role["subjects"]:
+            comp = self.comp(item["name"])
+            if comp != None and namespace == item["namespace"]:
+                self.addFactsFor(comp, "rolebindings", "logging-elasticsearch-view-role", dict())
+
     def comp(self, name):
         if name.startswith("logging-curator"):
             return "curator"
@@ -224,6 +234,7 @@ class OpenshiftLoggingFacts(OCBaseCommand):
         self.factsForSCCs(self.namespace)
         self.factsForOAuthClients(self.namespace)
         self.factsForClusterRoleBindings(self.namespace)
+        self.factsForRoleBindings(self.namespace)
         self.factsForSecrets(self.namespace)
 
         return self.facts
