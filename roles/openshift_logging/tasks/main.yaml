@@ -12,9 +12,10 @@
   changed_when: False
 
 - name: Gather OpenShift Logging Facts
-  openshift_logging_facts: 
+  openshift_logging_facts:
     oc_bin: "{{openshift.common.client_binary}}"
     admin_kubeconfig: "{{mktemp.stdout}}/admin.kubeconfig"
+    logging_namespace: logging
 
 - name: Install logging
   include: "{{ role_path }}/tasks/install_{{ item }}.yaml"
