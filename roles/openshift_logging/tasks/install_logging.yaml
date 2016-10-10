@@ -31,7 +31,7 @@
 
 - include: generate_secrets.yaml
 
-#- include: generate_configmaps.yaml
+- include: generate_configmaps.yaml
 
 - include: generate_services.yaml
 
