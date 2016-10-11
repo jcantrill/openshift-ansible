@@ -79,7 +79,7 @@ spec:
               value: "{{es_recover_after_time}}"
           volumeMounts:
             - name: elasticsearch
-              mountPath: /etc/elasticsearch/secrets
+              mountPath: /etc/elasticsearch/secret
               readOnly: true
             - name: elasticsearch-config
               mountPath: /usr/share/elasticsearch/config
