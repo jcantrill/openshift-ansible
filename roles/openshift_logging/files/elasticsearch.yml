@@ -44,7 +44,12 @@ io.fabric8.elasticsearch.authentication.users: ["system.logging.kibana", "system
 
 openshift.searchguard:
   keystore.path: /etc/elasticsearch/secret/admin.jks
+  keystore.type: PKCS12
+  keystore.password: pass
   truststore.path: /etc/elasticsearch/secret/searchguard.truststore
+  truststore.type: PKCS12
+  truststore.password: pass
+
 
 path:
   data: /elasticsearch/persistent/${CLUSTER_NAME}/data
@@ -60,18 +65,18 @@ searchguard:
     transport:
       enabled: true
       enforce_hostname_verification: false
-      keystore_type: JKS
+      keystore_type: PKCS12
       keystore_filepath: /etc/elasticsearch/secret/searchguard.key
-      keystore_password: kspass
-      truststore_type: JKS
+      keystore_password: pass
+      truststore_type: PKCS12
       truststore_filepath: /etc/elasticsearch/secret/searchguard.truststore
-      truststore_password: tspass
+      truststore_password: pass
     http:
       enabled: true
-      keystore_type: JKS
+      keystore_type: PKCS12
       keystore_filepath: /etc/elasticsearch/secret/key
-      keystore_password: kspass
+      keystore_password: pass
       clientauth_mode: OPTIONAL
-      truststore_type: JKS
+      truststore_type: PKCS12
       truststore_filepath: /etc/elasticsearch/secret/truststore
-      truststore_password: tspass
+      truststore_password: pass
