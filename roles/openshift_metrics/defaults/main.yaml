@@ -1,1 +1,9 @@
+---
+image_prefix: docker.io/openshift/origin-
+image_version: latest
+master_url: https://kubernetes.default.svc.cluster.local
+
+heapster_standalone: False
+
 metrics_resolution: 15s
+metrics_node_id: nodename
