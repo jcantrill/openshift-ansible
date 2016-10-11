@@ -3,7 +3,10 @@ image_prefix: docker.io/openshift/origin-
 image_version: latest
 master_url: https://kubernetes.default.svc.cluster.local
 
+hawkular_user_write_access: False   #if user accounts should be able to write metrics
+
 heapster_standalone: False
 
+metrics_duration: 7                 #number of days metrics are stored
 metrics_resolution: 15s
 metrics_node_id: nodename

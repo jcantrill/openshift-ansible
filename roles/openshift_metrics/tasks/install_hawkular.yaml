@@ -1,0 +1,4 @@
+---
+- name: Generate hawkular replication controller
+  #template: src=hawkular.j2 dest={{mktemp.stdout}}/templates/metrics-hawkular-rc.yaml
+  template: src=hawkular.j2 dest={{out_dir}}/templates/metrics-hawkular-rc.yaml
