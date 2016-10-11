@@ -1,0 +1,44 @@
+---
+- name: Generate service for heapster
+  template: src={{template_dir}}/service.j2 dest={{mktemp.stdout}}/templates/metrics-{{obj_name}}-svc.yaml
+  vars:
+    obj_name: heapster
+    ports:
+    - {port: 80, targetPort: http-endpoint}
+    selector:
+      name: "{{obj_name}}"
+    labels:
+      metrics-infra: "{{obj_name}}"
+      name: "{{obj_name}}"
+      
+- name: Generate service for hawkuler
+  template: src={{template_dir}}/service.j2 dest={{mktemp.stdout}}/templates/metrics-{{obj_name}}-svc.yaml
+  vars:
+    obj_name: hawkular-metrics
+    ports:
+    - {port: 443, targetPort: https-endpoint}
+    selector:
+      name: "{{obj_name}}"
+    labels:
+      metrics-infra: "{{obj_name}}"
+      name: "{{obj_name}}"
+
+- name: Generate services for cassandra
+  template: src={{template_dir}}/service.j2 dest={{mktemp.stdout}}/templates/metrics-{{obj_name}}-svc.yaml
+  vars:
+    obj_name: hawkular-{{component}}
+    ports:
+    - {name: cql-port, port: 9042, targetPort: cql-port}
+    - {name: thrift-port, port: 9160, targetPort: thrift-port}
+    - {name: tcp-port, port: 7000, targetPort: tcp-port}
+    - {name: ssl-port, port: 7001, targetPort: ssl-port}
+    selector:
+      type: "{{obj_name}}"
+    labels:
+      metrics-infra: "{{obj_name}}"
+      name: "{{obj_name}}"
+  with_items:
+    - cassandra
+    - cassandra-nodes
+  loop_control:
+    loop_var: component

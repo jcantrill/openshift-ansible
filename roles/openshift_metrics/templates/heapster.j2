@@ -1,0 +1,43 @@
+apiVersion: "v1"
+kind: "ReplicationController"
+metadata:
+  name: heapster
+  labels:
+    metrics-infra: heapster
+    name: heapster
+spec:
+  selector:
+    name: heapster
+  replicas: 1
+  template:
+    version: v1
+    metadata:
+      name: heapster
+      labels:
+        metrics-infra: heapster
+    spec:
+      serviceAccountName: heapster
+      containers:
+        -
+          name: heapster
+          image: {{image_prefix}}metrics-heapster:{{image_version}}
+          ports:
+            -
+              containerPort: 8082
+              name: "http-endpoint"
+          command:
+          - "heapster-wrapper.sh"
+          - "--wrapper.allowed_users_file=/secrets/heapster.allowed-users"
+          - "--source=kubernetes:{{master_url}}?useServiceAccount=true&kubeletHttps=true&kubeletPort=10250"
+          - "--tls_cert=/secrets/heapster.cert"
+          - "--tls_key=/secrets/heapster.key"
+          - "--tls_client_ca=/secrets/heapster.client-ca"
+          - "--allowed_users=%allowed_users%"
+          - "--metric_resolution={{metrics_resolution}}"
+          volumeMounts:
+            - name: heapster-secrets
+              mountPath: "/secrets"
+      volumes:
+        - name: heapster-secrets
+          secret:
+            secretName: heapster-secrets
