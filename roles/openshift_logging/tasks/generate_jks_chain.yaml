@@ -30,16 +30,16 @@
         keytool -genkey -alias {{component}} -keystore {{mktemp.stdout}}/{{component}}.jks -keypass kspass -storepass kspass -keyalg RSA -keysize 2048 -validity 712 -dname "CN={{component}}, OU=OpenShift, O=Logging" {{extensions.stdout}}
 
     - shell: >
-        keytool -certreq -alias {{component}} -keystore {{mktemp.stdout}}/{{component}}.jks -storepass kspass -file {{mktemp.stdout}}/{{component}}.csr -keyalg RSA -dname "CN={{component}}, OU=OpenShift, O=Logging" {{extensions.stdout}}
+        keytool -certreq -alias {{component}} -keystore {{mktemp.stdout}}/{{component}}.jks -storepass kspass -file {{mktemp.stdout}}/{{component}}-jks.csr -keyalg RSA -dname "CN={{component}}, OU=OpenShift, O=Logging" {{extensions.stdout}}
 
     - shell: >
-        openssl ca -in {{mktemp.stdout}}/{{component}}.csr -notext -out {{mktemp.stdout}}/{{component}}.crt -config {{mktemp.stdout}}/signing.conf -extensions v3_req -batch -extensions server_ext
+        openssl ca -in {{mktemp.stdout}}/{{component}}-jks.csr -notext -out {{mktemp.stdout}}/{{component}}-jks.crt -config {{mktemp.stdout}}/signing.conf -extensions v3_req -batch -extensions server_ext
 
     - shell: >
         keytool -import -file {{mktemp.stdout}}/ca.crt -keystore {{mktemp.stdout}}/{{component}}.jks -storepass kspass -noprompt -alias sig-ca
 
     - shell: >
-         keytool -import -file {{mktemp.stdout}}/{{component}}.crt -keystore {{mktemp.stdout}}/{{component}}.jks -storepass kspass -noprompt -alias {{component}}
+         keytool -import -file {{mktemp.stdout}}/{{component}}-jks.crt -keystore {{mktemp.stdout}}/{{component}}.jks -storepass kspass -noprompt -alias {{component}}
 
   when: not jks_file.stat.exists
 
