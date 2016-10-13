@@ -67,7 +67,7 @@ spec:
               value: "{{es_instance_ram}}"
             -
               name: "NODE_QUORUM"
-              value: "{{es_node_quorum}}"
+              value: "{{es_node_quorum | int}}"
             -
               name: "RECOVER_AFTER_NODES"
               value: "{{es_recover_after_nodes}}"
