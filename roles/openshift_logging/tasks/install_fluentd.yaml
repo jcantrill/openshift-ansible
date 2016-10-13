@@ -1,12 +1,7 @@
 ---
-- name: Generating Fluentd daemonset
-  template: src=fluentd.j2 dest={{mktemp.stdout}}/templates/logging-fluentd.yaml
-  vars:
-    daemonset_name: logging-fluentd
-    daemonset_component: fluentd
-    daemonset_container_name: fluentd-elasticsearch
-    daemonset_serviceAccount: aggregated-logging-fluentd
-  when: not logging_use_ops
+- shell: >
+    echo "{{ (logging_use_ops) | ternary(ops_host, es_host) }}"
+  register: fluentd_ops_host
 
 - name: Generating Fluentd daemonset
   template: src=fluentd.j2 dest={{mktemp.stdout}}/templates/logging-fluentd.yaml
@@ -15,8 +10,7 @@
     daemonset_component: fluentd
     daemonset_container_name: fluentd-elasticsearch
     daemonset_serviceAccount: aggregated-logging-fluentd
-    ops_host: logging-es-ops
-  when: logging_use_ops
+    ops_host: "{{ fluentd_ops_host.stdout }}"
 
 - name: "Set permissions for fluentd"
   command: >
