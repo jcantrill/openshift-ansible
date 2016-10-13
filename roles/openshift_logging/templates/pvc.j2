@@ -4,7 +4,7 @@ metadata:
   name: {{obj_name}}
   labels:
     logging-infra: support
-{% if annotations %}
+{% if annotations is defined %}
   annotations:
 {% for key,value in annotations.iteritems() %}
     {{key}}: {{value}}
