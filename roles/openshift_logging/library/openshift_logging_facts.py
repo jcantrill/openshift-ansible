@@ -251,7 +251,7 @@ def main():
     try:
         cmd = OpenshiftLoggingFacts(module, module.params['oc_bin'], module.params['admin_kubeconfig'],module.params['logging_namespace'])
         module.exit_json(
-            openshift_logging_facts  = cmd.do()
+                ansible_facts = {"openshift_logging_facts": cmd.do() }
         )
     except Exception, e:
         module.fail_json(msg=e)
