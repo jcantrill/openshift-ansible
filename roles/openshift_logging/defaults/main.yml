@@ -30,6 +30,8 @@ es_client_key: /etc/fluent/keys/key
 es_cluster_size: 1
 es_instance_ram: 1024M
 es_pvc_dynamic: False
+es_pvc_size: ""
+es_pvc_prefix: logging-es
 es_recover_after_time: 5m
 es_storage_group: 65534
 
@@ -38,5 +40,3 @@ ops_port: 9200
 ops_client_cert: /etc/fluent/keys/cert
 ops_client_key: /etc/fluent/keys/key
 ops_ca: /etc/fluent/keys/ca
-
-annotations: []
