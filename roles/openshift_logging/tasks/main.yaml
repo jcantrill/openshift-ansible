@@ -34,8 +34,9 @@
     - "{{mktemp.stdout}}/templates/*.yaml"
   loop_control:
     loop_var: file
-#  notify:
-#    - start cluster
+
+- name: Scaling up cluster
+  include: start_cluster.yaml
 
 - name: Delete temp directory
   file:

@@ -1,0 +1,11 @@
+---
+- shell: >
+    {{ openshift.common.client_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig get {{object}} --template='{{ '{{.spec.replicas}}' }}' -n logging
+  register: replica_count
+  failed_when: label_value.rc == 1 and 'exists' not in replica_count.stderr
+
+- shell: >
+    {{ openshift.common.client_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig scale {{object}} --replicas={{desired}} -n logging
+  register: scale_result
+  failed_when: scale_result.rc == 1 and 'exists' not in scale_result.stderr
+  when: replica_count.stdout != desired
