@@ -1,0 +1,19 @@
+---
+- name: remove metrics components
+  command: >
+    {{ openshift.common.client_binary }} -n '{{ project }}'
+    delete --selector=metrics-infra
+    services,replicationcontrollers,serviceaccounts,secrets
+  register: ret
+  changed_when: "ret.stdout != 'No resources found'"
+- name: test cluster-reader permissions for the heapster service account
+  command: >
+    {{ openshift.common.client_binary }} get clusterrolebindings
+    -o jsonpath='{.items[?(@.roleRef.name == "cluster-reader")].userNames}'
+  register: ret
+  changed_when: false
+- name: remove heapster cluster role binding
+  command: >
+    {{ openshift.common.admin_binary }} policy remove-cluster-role-from-user
+    cluster-reader 'system:serviceaccount:{{ project }}:heapster'
+  when: "'system:serviceaccount:{{ project }}:heapster' in ret.stdout"
