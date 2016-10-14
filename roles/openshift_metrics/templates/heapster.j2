@@ -33,7 +33,7 @@ spec:
         - "--tls_client_ca=/secrets/heapster.client-ca"
         - "--allowed_users=%allowed_users%"
         - "--metric_resolution={{metrics_resolution}}"
-{% if heapster_standalone %}
+{% if not heapster_standalone %}
         - "--wrapper.username_file=/hawkular-account/hawkular-metrics.username"
         - "--wrapper.password_file=/hawkular-account/hawkular-metrics.password"
         - "--wrapper.endpoint_check=https://hawkular-metrics:443/hawkular/metrics/status"
@@ -42,7 +42,7 @@ spec:
         volumeMounts:
         - name: heapster-secrets
           mountPath: "/secrets"
-{% if heapster_standalone %}
+{% if not heapster_standalone %}
         - name: hawkular-metrics-certificate
           mountPath: "/hawkular-cert"
         - name: hawkular-metrics-account
@@ -56,7 +56,7 @@ spec:
         - name: heapster-secrets
           secret:
             secretName: heapster-secrets
-{% if heapster_standalone %}
+{% if not heapster_standalone %}
         - name: hawkular-metrics-certificate
           secret:
             secretName: hawkular-metrics-certificate
