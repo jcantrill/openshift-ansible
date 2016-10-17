@@ -1,0 +1,49 @@
+---
+# TODO idempotency?
+# TODO support providing custom certificates, allowed users
+- name: create certificate output directory
+  file:
+    path: "{{ mktemp.stdout }}/certs"
+    state: directory
+    mode: 0700
+- name: generate ca certificate chain
+  shell: >
+    {{ openshift.common.admin_binary }} ca create-signer-cert
+    --key='{{ mktemp.stdout }}/certs/ca.key'
+    --cert='{{ mktemp.stdout }}/certs/ca.crt'
+    --serial='{{ mktemp.stdout }}/certs/ca.serial.txt'
+    --name="metrics-signer@$(date +%s)"
+- name: generate heapster key/cert
+  command: >
+    {{ openshift.common.admin_binary }} ca create-server-cert
+    --key='{{ mktemp.stdout }}/certs/heapster.key'
+    --cert='{{ mktemp.stdout }}/certs/heapster.cert'
+    --hostnames=heapster
+    --signer-cert='{{ mktemp.stdout }}/certs/ca.crt'
+    --signer-key='{{ mktemp.stdout }}/certs/ca.key'
+    --signer-serial='{{ mktemp.stdout }}/certs/ca.serial.txt'
+# TODO maybe there's an easier way to get the service accounts' ca crt?
+- name: get heapster service account secrets
+  shell: >
+    {{ openshift.common.client_binary }} -n '{{ project }}'
+    get serviceaccount/default
+    --template '{{ '{{range .secrets}}{{println .name}}{{end}}' }}'
+    | grep ^default-token-
+  register: sa_secret
+- name: get heapster service account ca
+  command: >
+    {{ openshift.common.client_binary }} -n '{{ project }}'
+    get 'secret/{{ sa_secret.stdout }}'
+    --template '{{ '{{index .data "ca.crt"}}' }}'
+  register: sa_secret
+- name: generate heapster secret template
+  template:
+    src: heapster_secrets.j2
+    dest: "{{ mktemp.stdout }}/templates/heapster_secrets.yaml"
+  vars:
+    cert: >
+      {{ lookup('file', '{{ mktemp.stdout }}/certs/heapster.cert')|b64encode }}
+    key: >
+      {{ lookup('file', '{{ mktemp.stdout }}/certs/heapster.key')|b64encode }}
+    client_ca: "{{ sa_secret.stdout }}"
+    allowed_users: "{{ 'system:master-proxy'|b64encode }}"

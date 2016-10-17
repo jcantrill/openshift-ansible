@@ -1,8 +1,26 @@
 ---
 - name: Generate heapster replication controller
   template: src=heapster.j2 dest={{mktemp.stdout}}/templates/metrics-heapster-rc.yaml
-  when: heapster_standalone == False
-
-- name: Generate heapster standalone replication controller
-  template: src=heapster.j2 dest={{mktemp.stdout}}/templates/metrics-heapster-rc.yaml
-  when: heapster_standalone
+- name: test cluster-reader permissions for the heapster service account
+  command: >
+    {{ openshift.common.client_binary }} get clusterrolebindings
+    -o jsonpath='{.items[?(@.roleRef.name == "cluster-reader")].userNames}'
+  register: ret
+  changed_when: false
+- name: add the cluster-reader role to the heapster service account
+  command: >
+    '{{ openshift.common.admin_binary }}' policy
+    -n '{{ project }}' add-cluster-role-to-user
+    cluster-reader 'system:serviceaccount:{{ project }}:heapster'
+  when: "'system:serviceaccount:{{ project }}:heapster' not in ret.stdout"
+- name: create heapster objects
+  command: >
+    {{ openshift.common.client_binary }} -n '{{ project }}'
+    create -f '{{ mktemp.stdout }}/templates/{{ file }}'
+  with_items:
+  - heapster_secrets.yaml
+  - metrics-heapster-sa.yaml
+  - metrics-heapster-svc.yaml
+  - metrics-heapster-rc.yaml
+  loop_control:
+    loop_var: file
