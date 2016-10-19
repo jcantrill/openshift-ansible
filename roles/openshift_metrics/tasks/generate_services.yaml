@@ -26,7 +26,7 @@
 - name: Generate services for cassandra
   template: src={{template_dir}}/service.j2 dest={{mktemp.stdout}}/templates/metrics-{{obj_name}}-svc.yaml
   vars:
-    obj_name: hawkular-{{component}}
+    obj_name: hawkular-{{item}}
     ports:
     - {name: cql-port, port: 9042, targetPort: cql-port}
     - {name: thrift-port, port: 9160, targetPort: thrift-port}
@@ -40,5 +40,3 @@
   with_items:
     - cassandra
     - cassandra-nodes
-  loop_control:
-    loop_var: component

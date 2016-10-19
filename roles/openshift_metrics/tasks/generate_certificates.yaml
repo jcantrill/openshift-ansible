@@ -1,6 +1,6 @@
 ---
 # TODO idempotency?
-# TODO support providing custom certificates, allowed users
+# TODO support providing custom certificates
 - name: create certificate output directory
   file:
     path: "{{ mktemp.stdout }}/certs"
@@ -37,13 +37,11 @@
     --template '{{ '{{index .data "ca.crt"}}' }}'
   register: sa_secret
 - name: read files for the heapster secret
-  command: base64 --wrap 0 "{{ mktemp.stdout }}/certs/heapster.{{ file }}"
+  command: base64 --wrap 0 "{{ mktemp.stdout }}/certs/heapster.{{ item }}"
   register: heapster_secret
   with_items:
   - cert
   - key
-  loop_control:
-    loop_var: file
 - name: generate heapster secret template
   template:
     src: secret.j2
@@ -56,7 +54,7 @@
       heapster.cert: "{{ heapster_secret.results[0].stdout }}"
       heapster.key: "{{ heapster_secret.results[1].stdout }}"
       heapster.client-ca: "{{ sa_secret.stdout }}"
-      heapster.allowed-users: "{{ 'system:master-proxy'|b64encode }}"
+      heapster.allowed-users: "{{ heapster_allowed_users|b64encode }}"
 - name: generate hawkular-metrics certificates
   include: setup_certificate.yaml
   vars:
@@ -126,7 +124,7 @@
     '{{ hawkular_metrics_password.stdout }}'
 - name: read files for the hawkular-metrics secret
   command: >
-    base64 --wrap 0 "{{ mktemp.stdout }}/certs/{{ file }}"
+    base64 --wrap 0 "{{ mktemp.stdout }}/certs/{{ item }}"
   register: hawkular_metrics_secret
   with_items:
   - hawkular-metrics.keystore
@@ -142,8 +140,6 @@
   - hawkular-cassandra-truststore.pwd
   - hawkular-cassandra.pem
   - hawkular-cassandra.cert
-  loop_control:
-    loop_var: file
 - name: generate hawkular-metrics-secrets secret template
   template:
     src: secret.j2

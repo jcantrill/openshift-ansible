@@ -6,6 +6,7 @@ master_url: https://kubernetes.default.svc.cluster.local
 hawkular_user_write_access: False   #if user accounts should be able to write metrics
 
 heapster_standalone: False
+heapster_allowed_users: system:master-proxy
 
 metrics_duration: 7                 #number of days metrics are stored
 metrics_resolution: 15s

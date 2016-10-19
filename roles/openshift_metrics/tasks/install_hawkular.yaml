@@ -17,25 +17,21 @@
 - name: create hawkular metrics objects
   command: >
     {{ openshift.common.client_binary }} -n '{{ project }}'
-    create -f '{{ mktemp.stdout }}/templates/{{ file }}'
+    create -f '{{ mktemp.stdout }}/templates/{{ item }}'
   with_items:
   - hawkular_metrics_secrets.yaml
   - hawkular_metrics_certificate.yaml
   - hawkular_metrics_account.yaml
   - cassandra_secrets.yaml
   - cassandra_certificate.yaml
-  loop_control:
-    loop_var: file
 - name: process other templates
   shell: >
     {{ openshift.common.client_binary }} -n '{{ project }}'
-    process '{{ file }}'
+    process '{{ item }}'
     | oc create -f -
   with_items:
   - hawkular-cassandra-services
   - hawkular-support
-  loop_control:
-    loop_var: file
 # TODO persistent storage
 - name: process hawkular-metrics template
   shell: >

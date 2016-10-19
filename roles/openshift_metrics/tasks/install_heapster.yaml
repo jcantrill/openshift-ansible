@@ -16,11 +16,9 @@
 - name: create heapster objects
   command: >
     {{ openshift.common.client_binary }} -n '{{ project }}'
-    create -f '{{ mktemp.stdout }}/templates/{{ file }}'
+    create -f '{{ mktemp.stdout }}/templates/{{ item }}'
   with_items:
   - heapster_secrets.yaml
   - metrics-heapster-sa.yaml
   - metrics-heapster-svc.yaml
   - metrics-heapster-rc.yaml
-  loop_control:
-    loop_var: file
