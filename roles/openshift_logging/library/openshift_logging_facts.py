@@ -33,6 +33,7 @@ LOGGING_INFRA_KEY="logging-infra"
 DS_FLUENTD_SELECTOR=LOGGING_INFRA_KEY + "=" + "fluentd"
 LOGGING_SELECTOR=LOGGING_INFRA_KEY + "=" + "support"
 ROUTE_SELECTOR = "component=support,logging-infra=support,provider=openshift"
+COMPONENTS = ["kibana","curator","elasticsearch","fluentd"]
 
 class OCBaseCommand(object):
     def __init__(self, binary, kubeconfig, namespace):
@@ -59,6 +60,8 @@ class OCBaseCommand(object):
         process = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = process.communicate(cmd)
         if len(err) > 0:
+            if 'not found' in err:
+                return dict()
             raise Exception(err)
 
         return json.loads(out)
@@ -72,14 +75,20 @@ class OpenshiftLoggingFacts(OCBaseCommand):
         self.logger = logger
         self.facts = dict()
 
-    def addFactsFor(self, comp, kind, name, facts):
+    def defaultKeysFor(self, kind):
+        for comp in COMPONENTS:
+            self.addFactsFor(comp, kind)
+
+    def addFactsFor(self, comp, kind, name=None, facts=None):
         if self.facts.has_key(comp) == False:
             self.facts[comp] = dict()
         if self.facts[comp].has_key(kind) == False:
             self.facts[comp][kind] = dict()
-        self.facts[comp][kind][name] = facts
+        if name:
+           self.facts[comp][kind][name] = facts
 
     def factsForRoutes(self, namespace):
+        self.defaultKeysFor("routes")
         routeList =  self.oc("get","routes", namespace=namespace, addOptions=["-l",ROUTE_SELECTOR])
         if len(routeList["items"]) == 0:
             return None
@@ -92,6 +101,7 @@ class OpenshiftLoggingFacts(OCBaseCommand):
 
 
     def factsForDaemonsets(self, namespace):
+        self.defaultKeysFor("daemonsets")
         dsList = self.oc("get", "daemonsets", namespace=namespace, addOptions=["-l",LOGGING_INFRA_KEY+"=fluentd"])
         if len(dsList["items"]) == 0:
             return
@@ -110,7 +120,18 @@ class OpenshiftLoggingFacts(OCBaseCommand):
             )
             self.addFactsFor(comp, "daemonsets", name, result)
 
+    def factsForPvcs(self, namespace):
+        self.defaultKeysFor("pvcs")
+        pvclist = self.oc("get", "pvc", namespace=namespace, addOptions=["-l",LOGGING_INFRA_KEY])
+        if len(pvclist["items"]) == 0:
+            return
+        pvcs = []
+        for pvc in pvclist["items"]:
+            name = pvc["metadata"]["name"]
+            self.addFactsFor("elasticsearch","pvcs",name,dict())
+
     def factsForDeploymentConfigs(self, namespace):
+        self.defaultKeysFor("deploymentconfigs")
         dclist = self.oc("get", "deploymentconfigs", namespace=namespace, addOptions=["-l",LOGGING_INFRA_KEY])
         if len(dclist["items"]) == 0:
             return
@@ -140,6 +161,7 @@ class OpenshiftLoggingFacts(OCBaseCommand):
                 self.addFactsFor(comp,"deploymentconfigs",name,facts)
 
     def factsForServices(self, namespace):
+        self.defaultKeysFor("services")
         servicelist = self.oc("get", "services", namespace=namespace, addOptions=["-l",LOGGING_SELECTOR])
         if len(servicelist["items"]) == 0:
             return
@@ -150,6 +172,7 @@ class OpenshiftLoggingFacts(OCBaseCommand):
                 self.addFactsFor(comp, "services", name, dict())
 
     def factsForConfigMaps(self, namespace):
+        self.defaultKeysFor("configmaps")
         aList = self.oc("get", "configmaps", namespace=namespace, addOptions=["-l",LOGGING_SELECTOR])
         if len(aList["items"]) == 0:
             return
@@ -160,6 +183,7 @@ class OpenshiftLoggingFacts(OCBaseCommand):
                 self.addFactsFor(comp, "configmaps", name, item["data"])
 
     def factsForOAuthClients(self, namespace):
+        self.defaultKeysFor("oauthclients")
         aList = self.oc("get", "oauthclients", namespace=namespace, addOptions=["-l",LOGGING_SELECTOR])
         if len(aList["items"]) == 0:
             return
@@ -173,6 +197,7 @@ class OpenshiftLoggingFacts(OCBaseCommand):
                 self.addFactsFor(comp, "oauthclients", name, result)
 
     def factsForSecrets(self, namespace):
+        self.defaultKeysFor("secrets")
         aList = self.oc("get", "secrets", namespace=namespace)
         if len(aList["items"]) == 0:
             return
@@ -186,6 +211,7 @@ class OpenshiftLoggingFacts(OCBaseCommand):
                 self.addFactsFor(comp, "secrets", name, result)
 
     def factsForSCCs(self, namespace):
+        self.defaultKeysFor("sccs")
         scc = self.oc("get", "scc", name="privileged")
         if len(scc["users"]) == 0:
             return
@@ -195,8 +221,9 @@ class OpenshiftLoggingFacts(OCBaseCommand):
                 self.addFactsFor(comp, "sccs", "privileged", dict())
 
     def factsForClusterRoleBindings(self, namespace):
+        self.defaultKeysFor("clusterrolebindings")
         role = self.oc("get", "clusterrolebindings", name="cluster-readers")
-        if len(role["subjects"]) == 0:
+        if "subjects" not in role or  len(role["subjects"]) == 0:
             return
         for item in role["subjects"]:
             comp = self.comp(item["name"])
@@ -205,8 +232,9 @@ class OpenshiftLoggingFacts(OCBaseCommand):
 
 # this needs to end up nested under the service account...
     def factsForRoleBindings(self, namespace):
+        self.defaultKeysFor("rolebindings")
         role = self.oc("get", "rolebindings", namespace=namespace, name="logging-elasticsearch-view-role")
-        if len(role["subjects"]) == 0:
+        if "subjects" not in role or len(role["subjects"]) == 0:
             return
         for item in role["subjects"]:
             comp = self.comp(item["name"])
@@ -236,6 +264,7 @@ class OpenshiftLoggingFacts(OCBaseCommand):
         self.factsForClusterRoleBindings(self.namespace)
         self.factsForRoleBindings(self.namespace)
         self.factsForSecrets(self.namespace)
+        self.factsForPvcs(self.namespace)
 
         return self.facts
 
