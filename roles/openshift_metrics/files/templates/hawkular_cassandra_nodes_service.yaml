@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hawkular-cassandra-nodes
+  labels:
+    metrics-infra: hawkular-cassandra
+    name: hawkular-cassandra
+spec:
+  selector:
+    type: hawkular-cassandra
+  portalIP: None
+  ports:
+  - name: cql-port
+    port: 9042
+  - name: thift-port
+    port: 9160
+  - name: tcp-port
+    port: 7000
+  - name: ssl-port
+    port: 7001

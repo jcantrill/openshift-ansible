@@ -7,9 +7,10 @@
 
 - debug: msg="Created temp dir {{mktemp.stdout}}"
 
-- name: Create temp directory for all our templates
-  file: path={{mktemp.stdout}}/templates state=directory mode=0755
-  changed_when: False
+- name: copy `templates` directory
+  copy:
+    src: "{{ role_path }}/files/templates/"
+    dest: "{{ mktemp.stdout }}/templates"
 
 - include: generate_serviceaccounts.yaml
 - include: generate_services.yaml

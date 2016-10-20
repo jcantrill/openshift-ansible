@@ -1,5 +1,5 @@
-apiVersion: "v1"
-kind: "ReplicationController"
+apiVersion: v1
+kind: ReplicationController
 metadata:
   name: hawkular-metrics
   labels:
@@ -12,20 +12,19 @@ spec:
   template:
     version: v1
     metadata:
-      name: hawkular-metrics
       labels:
         metrics-infra: hawkular-metrics
         name: hawkular-metrics
     spec:
-      serviceAccountName: hawkular-metrics
+      serviceAccount: hawkular
       containers:
-      - name: hawkular-metrics
-        image: {{image_prefix}}metrics-hawkular-metrics:{{image_version}}
+      - image: {{image_prefix}}metrics-hawkular-metrics:{{image_version}}
+        name: hawkular-metrics
         ports:
-        - containerPort: 8080
-          name: "http-endpoint"
-        - containerPort: 8443
-          name: "https-endpoint"
+        - name: http-endpoint
+          containerPort: 8080
+        - name: https-endpoint
+          containerPort: 8443
         command:
         - "/opt/hawkular/scripts/hawkular-metrics-wrapper.sh"
         - "-b"
@@ -53,7 +52,7 @@ spec:
         - name: hawkular-metrics-secrets
           mountPath: "/secrets"
         - name: hawkular-metrics-client-secrets
-          mountPath: "/client-certs"
+          mountPath: "/client-secrets"
         readinessProbe:
           exec:
             command:
@@ -63,9 +62,9 @@ spec:
             command:
             - "/opt/hawkular/scripts/hawkular-metrics-liveness.py"
       volumes:
-        - name: hawkular-metrics-secrets
-          secret:
-            secretName: hawkular-metrics-secrets
-        - name: hawkular-metrics-client-secrets
-          secret:
-            secretName: hawkular-metrics-account
+      - name: hawkular-metrics-secrets
+        secret:
+          secretName: hawkular-metrics-secrets
+      - name: hawkular-metrics-client-secrets
+        secret:
+          secretName: hawkular-metrics-account
