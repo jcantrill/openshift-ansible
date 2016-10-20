@@ -34,3 +34,7 @@ deployer_cmap_params: "{{ kh_cmap_param }} {{ kh_ops_cmap_param }} {{ pmu_cmap_p
 es_node_quorum: "{{es_cluster_size/2 + 1}}"
 es_recover_after_nodes: "{{es_cluster_size - 1}}"
 es_recover_expected_nodes: "{{es_cluster_size}}"
+
+es_ops_node_quorum: "{{es_ops_cluster_size/2 + 1}}"
+es_ops_recover_after_nodes: "{{es_ops_cluster_size - 1}}"
+es_ops_recover_expected_nodes: "{{es_ops_cluster_size}}"
