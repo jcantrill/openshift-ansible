@@ -14,12 +14,12 @@
 
 - name: "Set permissions for fluentd"
   command: >
-    {{ openshift.common.admin_binary}} --config={{ mktemp.stdout }}/admin.kubeconfig policy add-scc-to-user privileged system:serviceaccount:logging:aggregated-logging-fluentd
+    {{ openshift.common.admin_binary}} --config={{ mktemp.stdout }}/admin.kubeconfig policy add-scc-to-user privileged system:serviceaccount:{{logging_namespace}}:aggregated-logging-fluentd
   register: fluentd_output
   failed_when: "fluentd_output.rc == 1 and 'exists' not in fluentd_output.stderr"
 
 - name: "Set additional permissions for fluentd"
   command: >
-    {{ openshift.common.admin_binary}} --config={{ mktemp.stdout }}/admin.kubeconfig policy add-cluster-role-to-user cluster-reader system:serviceaccount:logging:aggregated-logging-fluentd
+    {{ openshift.common.admin_binary}} --config={{ mktemp.stdout }}/admin.kubeconfig policy add-cluster-role-to-user cluster-reader system:serviceaccount:{{logging_namespace}}:aggregated-logging-fluentd
   register: fluentd2_output
   failed_when: "fluentd2_output.rc == 1 and 'exists' not in fluentd2_output.stderr"

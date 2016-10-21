@@ -31,7 +31,7 @@
 
 - name: Creating API objects from generated templates
   command: >
-    {{ openshift.common.client_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig apply -f {{file}} -n logging
+    {{ openshift.common.client_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig apply -f {{file}} -n {{logging_namespace}}
   with_fileglob:
     - "{{mktemp.stdout}}/templates/*.yaml"
   loop_control:

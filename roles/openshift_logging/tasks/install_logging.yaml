@@ -2,13 +2,13 @@
 # This is the base configuration for installing the other components
 - name: Check for logging project already exists
   command: >
-    {{ openshift.common.client_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig get project logging -o jsonpath='{.metadata.name}'
+    {{ openshift.common.client_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig get project {{logging_namespace}} -o jsonpath='{.metadata.name}'
   register: logging_project_result
   ignore_errors: True
 
 - name: "Create logging project"
   command: >
-    {{ openshift.common.admin_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig new-project logging
+    {{ openshift.common.admin_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig new-project {{logging_namespace}}
   when: logging_project_result.stdout == ""
 
 - include: generate_certs.yaml
