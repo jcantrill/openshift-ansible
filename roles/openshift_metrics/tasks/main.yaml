@@ -2,6 +2,12 @@
 - name: check that hawkular_metrics_hostname is set
   fail: msg='the hawkular_metrics_hostname variable is required'
   when: "{{ hawkular_metrics_hostname is not defined }}"
+- name: check the value of hawkular_cassandra_storage_type
+  fail:
+    msg: >
+      hawkular_cassandra_storage_type ({{ hawkular_cassandra_storage_type }})
+      is invalid, must be one of: emptydir, pv, dynamic
+  when: hawkular_cassandra_storage_type not in hawkular_cassandra_storage_types
 - name: Install Metrics
   include: "{{ role_path }}/tasks/install_{{ include_file }}.yaml"
   vars:

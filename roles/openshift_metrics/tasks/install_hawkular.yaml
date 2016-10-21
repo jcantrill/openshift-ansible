@@ -22,7 +22,6 @@
   - hawkular_cassandra_service.yaml
   - hawkular_cassandra_nodes_service.yaml
   - cassandra_serviceaccount.yaml
-# TODO persistent storage
 - name: process cassandra template for the master node
   shell: >
     {{ openshift.common.client_binary }} -n '{{ project }}'
