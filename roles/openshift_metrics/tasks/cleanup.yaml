@@ -3,7 +3,7 @@
   command: >
     {{ openshift.common.client_binary }} -n '{{ project }}'
     delete --selector=metrics-infra
-    services,replicationcontrollers,serviceaccounts,secrets
+    services,replicationcontrollers,serviceaccounts,secrets,templates
   register: ret
   changed_when: "ret.stdout != 'No resources found'"
 - name: test cluster-reader permissions for the heapster service account

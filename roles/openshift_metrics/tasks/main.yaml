@@ -1,6 +1,13 @@
 ---
+# TODO import templates to this repo?
+- name: temporary hack to include templates from origin-metrics
+  fail: msg='the origin_metrics_dir variable is required'
+  when: "{{ origin_metrics_dir is not defined }}"
+- name: check that hawkular_metrics_hostname is set
+  fail: msg='the hawkular_metrics_hostname variable is required'
+  when: "{{ hawkular_metrics_hostname is not defined }}"
 - name: Install Metrics
-  include: "{{ role_path }}/tasks/install_{{ item }}.yaml"
+  include: "{{ role_path }}/tasks/install_{{ include_file }}.yaml"
   vars:
     template_dir: ../openshift_logging/templates
     out_dir: /home/vagrant
@@ -8,3 +15,6 @@
     - metrics
     - heapster
     - hawkular
+  loop_control:
+    loop_var: include_file
+# TODO configure metricsPublicURL and restart master?
