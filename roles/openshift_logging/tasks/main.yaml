@@ -18,7 +18,7 @@
     logging_namespace: logging
 
 - name: Install logging
-  include: "{{ role_path }}/tasks/install_{{ item }}.yaml"
+  include: "{{ role_path }}/tasks/install_{{ install_component }}.yaml"
   when: openshift_hosted_logging_install | default(true) | bool
   with_items:
     - logging
@@ -26,6 +26,8 @@
     - kibana
     - curator
     - fluentd
+  loop_control:
+    loop_var: install_component
 
 - name: Creating API objects from generated templates
   command: >

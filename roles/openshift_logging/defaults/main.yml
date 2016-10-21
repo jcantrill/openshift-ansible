@@ -21,6 +21,7 @@ fluentd_cpu_limit: 100m
 fluentd_es_copy: False
 fluentd_use_journal: False
 journal_read_from_head: False
+fluentd_hosts: ['--all']
 
 es_host: logging-es
 es_port: 9200
