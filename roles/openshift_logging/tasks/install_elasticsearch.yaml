@@ -1,23 +1,95 @@
 ---
-#- name: Check ES Install
-#  when: "{{ openshift_logging.facts.es.deploymentconfigs | list | count }} == 0"
-- name: Generate elasticsearch deploymentconfig
-  template: src=es.j2 dest={{mktemp.stdout}}/templates/logging-es-dc.yaml
+- name: Validate Elasticsearch cluster size
+  fail: msg="The es_cluster_size may not be scaled down more than 1 less (or 0) the number of Elasticsearch nodes already deployed"
+  when: "{{openshift_logging_facts.elasticsearch.deploymentconfigs | length - es_cluster_size | abs > 1}}"
+
+- name: Generate PersistentVolumeClaims
+  include: "{{ role_path}}/tasks/generate_pvcs.yaml"
+  vars:
+    es_pvc_names: "{{openshift_logging_facts.elasticsearch.pvcs.keys()}}"
+    es_dc_names: "{{openshift_logging_facts.elasticsearch.deploymentconfigs.keys()}}"
+
+- name: Init pool of DeploymentConfig names for Elasticsearch
+  set_fact: es_dc_pool={{es_dc_pool + [deploy_name]}}
+  vars:
+    component: es
+    es_cluster_name: "{{component}}"
+    deploy_name_prefix: "logging-{{component}}"
+    deploy_name: "{{deploy_name_prefix}}-{{'abcdefghijklmnopqrstuvwxyz0123456789'|random_word(8)}}"
+    es_dc_pool: []
+  with_sequence: count={{es_cluster_size - openshift_logging_facts.elasticsearch.deploymentconfigs.keys() | length}}
+  when:
+   - "{{ openshift_logging_facts.elasticsearch.deploymentconfigs.keys() | length < es_cluster_size }}"
+    
+      
+- name: Generate Elasticsearch DeploymentConfig
+  template: src=es.j2 dest={{mktemp.stdout}}/templates/logging-{{deploy_name}}-dc.yaml
   vars:
     component: es
     logging_component: elasticsearch
     deploy_name_prefix: "logging-{{component}}"
-    deploy_name: "{{deploy_name_prefix}}-abc123"
     image: "{{image_prefix}}logging-elasticsearch:{{image_version}}"
     es_cluster_name: "{{component}}"
+    volume_names: "{{es_pvc_pool | default([])}}"
+    pvc_claim: "{{(volume_names | length > item.0) | ternary(volume_names[item.0], None)}}"
+    deploy_name: "{{item.1}}"
+  with_indexed_items:
+    - "{{es_dc_pool}}"
 
-- name: Generate OPS elasticsearch deploymentconfig
-  template: src=es.j2 dest={{mktemp.stdout}}/templates/logging-es-ops-dc.yaml
+# --------- Tasks for Operation clusters ---------
+
+- name: Validate Elasticsearch cluster size for Ops
+  fail: msg="The es_cluster_size may not be scaled down more than 1 less (or 0) the number of Elasticsearch nodes already deployed"
+  vars:
+    es_dcs: "{{openshift_logging_facts.elasticsearch_ops.deploymentconfigs}}"
+    cluster_size: "{{es_cluster_size}}"
+  when: 
+    - logging_use_ops
+    - "{{es_dcs | length - cluster_size | abs > 1}}"
+
+- name: Generate PersistentVolumeClaims for Ops
+  include: "{{ role_path}}/tasks/generate_pvcs.yaml"
+  vars:
+    es_pvc_pool: []
+    es_pvc_names: "{{openshift_logging_facts.elasticsearch_ops.pvcs.keys()}}"
+    es_dc_names: "{{openshift_logging_facts.elasticsearch_ops.deploymentconfigs.keys()}}"
+    es_pvc_prefix: "{{es_ops_pvc_prefix}}"
+    es_cluster_size: "{{es_ops_cluster_size}}"
+    es_pvc_size: "{{es_ops_pvc_size}}"
+    es_pvc_dynamic: "{{es_ops_pvc_dynamic}}"
+  when: logging_use_ops
+      
+- name: Init pool of DeploymentConfig names for Elasticsearch for Ops
+  set_fact: es_dc_pool_ops={{es_dc_pool_ops + [deploy_name]}}
+  vars:
+    es_dc_pool_ops: []
+    component: es-ops
+    es_cluster_name: "{{component}}"
+    deploy_name_prefix: "logging-{{component}}"
+    deploy_name: "{{deploy_name_prefix}}-{{'abcdefghijklmnopqrstuvwxyz0123456789'|random_word(8)}}"
+    cluster_size: "{{es_ops_cluster_size}}"
+  with_sequence: count={{cluster_size - openshift_logging_facts.elasticsearch_ops.deploymentconfigs.keys() | length}}
+  when:
+    - logging_use_ops
+    - "{{ openshift_logging_facts.elasticsearch_ops.deploymentconfigs.keys() | length < cluster_size }}"
+      
+- name: Generate Elasticsearch DeploymentConfig for Ops
+  template: src=es.j2 dest={{mktemp.stdout}}/templates/logging-{{deploy_name}}-dc.yaml
   vars:
     component: es-ops
     logging_component: elasticsearch
     deploy_name_prefix: "logging-{{component}}"
-    deploy_name: "{{deploy_name_prefix}}-abc123"
     image: "{{image_prefix}}logging-elasticsearch:{{image_version}}"
+    volume_names: "{{es_pvc_pool | default([])}}"
+    pvc_claim: "{{(volume_names | length > item.0) | ternary(volume_names[item.0], None)}}"
+    deploy_name: "{{item.1}}"
     es_cluster_name: "{{component}}"
+    es_instance_ram: es_ops_instance_ram
+    es_node_quorum: es_ops_node_quorum
+    es_recover_after_nodes: es_ops_recover_after_nodes
+    es_recover_expected_nodes: es_ops_recover_expected_nodes
+    es_recover_after_time: es_ops_recover_after_time
+  with_indexed_items:
+    - "{{es_dc_pool_ops}}"
   when: logging_use_ops
+

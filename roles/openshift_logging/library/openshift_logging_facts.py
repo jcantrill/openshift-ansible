@@ -33,7 +33,7 @@ LOGGING_INFRA_KEY="logging-infra"
 DS_FLUENTD_SELECTOR=LOGGING_INFRA_KEY + "=" + "fluentd"
 LOGGING_SELECTOR=LOGGING_INFRA_KEY + "=" + "support"
 ROUTE_SELECTOR = "component=support,logging-infra=support,provider=openshift"
-COMPONENTS = ["kibana","curator","elasticsearch","fluentd"]
+COMPONENTS = ["kibana","curator","elasticsearch","fluentd", "kibana_ops", "curator_ops", "elasticsearch_ops"]
 
 class OCBaseCommand(object):
     def __init__(self, binary, kubeconfig, namespace):
@@ -242,14 +242,20 @@ class OpenshiftLoggingFacts(OCBaseCommand):
                 self.addFactsFor(comp, "rolebindings", "logging-elasticsearch-view-role", dict())
 
     def comp(self, name):
-        if name.startswith("logging-curator"):
+        if name.startswith("logging-curator-ops"):
+            return "curator_ops"
+        elif name.startswith("logging-kibana-ops") or name.startswith("kibana-ops"):
+            return "kibana_ops"
+        elif name.startswith("logging-es-ops") or name.startswith("logging-elasticsearch-ops"):
+            return "elasticsearch_ops"
+        elif name.startswith("logging-curator"):
             return "curator"
         elif name.startswith("logging-kibana") or name.startswith("kibana"):
             return "kibana"
-        elif name.startswith("logging-fluentd") or name.endswith("aggregated-logging-fluentd"):
-            return "fluentd"
         elif name.startswith("logging-es") or name.startswith("logging-elasticsearch"):
             return "elasticsearch"
+        elif name.startswith("logging-fluentd") or name.endswith("aggregated-logging-fluentd"):
+            return "fluentd"
         else:
             return None
 
