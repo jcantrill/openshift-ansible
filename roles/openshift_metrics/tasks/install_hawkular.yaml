@@ -22,20 +22,14 @@
   - hawkular_cassandra_service.yaml
   - hawkular_cassandra_nodes_service.yaml
   - cassandra_serviceaccount.yaml
-- name: process cassandra template for the master node
+- name: process cassandra template
   shell: >
     {{ openshift.common.client_binary }} -n '{{ project }}'
     process -f '{{ mktemp.stdout }}/templates/hawkular_cassandra_rc.yaml'
-    --value NODE=1 --value MASTER=true
+    --value 'NODE={{ item }}'
+    {% if item == '1' %}--value MASTER=true{% endif %}
     | oc create -f -
-## TODO multi-node cassandra
-#- name: process cassandra template for other nodes
-#  shell: >
-#    {{ openshift.common.client_binary }} -n '{{ project }}'
-#    process hawkular-cassandra-node-emptydir --value NODE={{ item }}
-#    | oc create -f -
-#  with_sequence: start=1 end={{ cassandra_nodes }}
-#  when: {{ cassandra_nodes > 1 }}
+  with_sequence: start=1 end={{ hawkular_cassandra_nodes }}
 - name: create the hawkular-metrics route
   command: >
     {{ openshift.common.client_binary }} -n '{{ project }}'
