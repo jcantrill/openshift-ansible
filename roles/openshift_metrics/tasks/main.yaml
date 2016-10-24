@@ -10,9 +10,6 @@
   when: hawkular_cassandra_storage_type not in hawkular_cassandra_storage_types
 - name: Install Metrics
   include: "{{ role_path }}/tasks/install_{{ include_file }}.yaml"
-  vars:
-    template_dir: ../openshift_logging/templates
-    out_dir: /home/vagrant
   with_items:
     - metrics
     - heapster
