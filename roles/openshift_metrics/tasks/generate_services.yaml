@@ -1,6 +1,6 @@
 ---
 - name: Generate service for heapster
-  template: src={{template_dir}}/service.j2 dest={{mktemp.stdout}}/templates/metrics-{{obj_name}}-svc.yaml
+  template: src=service.j2 dest={{mktemp.stdout}}/templates/metrics-{{obj_name}}-svc.yaml
   vars:
     obj_name: heapster
     ports:
@@ -10,9 +10,9 @@
     labels:
       metrics-infra: "{{obj_name}}"
       name: "{{obj_name}}"
-      
-- name: Generate service for hawkuler
-  template: src={{template_dir}}/service.j2 dest={{mktemp.stdout}}/templates/metrics-{{obj_name}}-svc.yaml
+
+- name: Generate service for hawkular-metrics
+  template: src=service.j2 dest={{mktemp.stdout}}/templates/metrics-{{obj_name}}-svc.yaml
   vars:
     obj_name: hawkular-metrics
     ports:
@@ -24,7 +24,7 @@
       name: "{{obj_name}}"
 
 - name: Generate services for cassandra
-  template: src={{template_dir}}/service.j2 dest={{mktemp.stdout}}/templates/metrics-{{obj_name}}-svc.yaml
+  template: src=service.j2 dest={{mktemp.stdout}}/templates/metrics-{{obj_name}}-svc.yaml
   vars:
     obj_name: hawkular-{{item}}
     ports:
@@ -33,10 +33,11 @@
     - {name: tcp-port, port: 7000, targetPort: tcp-port}
     - {name: ssl-port, port: 7001, targetPort: ssl-port}
     selector:
-      type: "{{obj_name}}"
+      type: hawkular-cassandra
     labels:
-      metrics-infra: "{{obj_name}}"
-      name: "{{obj_name}}"
+      metrics-infra: hawkular-cassandra
+      name: hawkular-cassandra
+    headless: "{{ item == 'cassandra-nodes' }}"
   with_items:
     - cassandra
     - cassandra-nodes

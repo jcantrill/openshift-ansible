@@ -9,6 +9,9 @@ metadata:
 {% endfor %}
 {% endif %}
 spec:
+{% if headless is defined and headless %}
+  portalIP: None
+{% endif %}
   ports:
 {% for port in ports %}
   -

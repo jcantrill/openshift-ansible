@@ -17,10 +17,10 @@
   - cassandra_secrets.yaml
   - cassandra_certificate.yaml
   - hawkular_serviceaccount.yaml
-  - hawkular_metrics_service.yaml
+  - metrics-hawkular-metrics-svc.yaml
   - hawkular_metrics_rc.yaml
-  - hawkular_cassandra_service.yaml
-  - hawkular_cassandra_nodes_service.yaml
+  - metrics-hawkular-cassandra-svc.yaml
+  - metrics-hawkular-cassandra-nodes-svc.yaml
   - cassandra_serviceaccount.yaml
 - name: process cassandra template
   shell: >
