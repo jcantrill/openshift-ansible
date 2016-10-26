@@ -57,11 +57,15 @@ class OCBaseCommand(object):
         if namespace != None:
             cmd = cmd + ["-n", namespace]
         cmd = cmd + ["--user="+self.user,"--config="+self.kubeconfig] + default_oc_options + addOptions
-        process = Popen(cmd, stdout=PIPE, stderr=PIPE)
-        out, err = process.communicate(cmd)
-        if len(err) > 0:
-            if 'not found' in err:
-                return dict()
+        try:
+            process = Popen(cmd, stdout=PIPE, stderr=PIPE)
+            out, err = process.communicate(cmd)
+            if len(err) > 0:
+                if 'not found' in err:
+                    return dict()
+                raise Exception(err)
+        except Exception as e:
+            err = "There was an exception trying to run the command '"+ " ".join(cmd) +"' " + str(e)
             raise Exception(err)
 
         return json.loads(out)
@@ -288,8 +292,8 @@ def main():
         module.exit_json(
                 ansible_facts = {"openshift_logging_facts": cmd.do() }
         )
-    except Exception, e:
-        module.fail_json(msg=e)
+    except Exception as e:
+        module.fail_json(msg=str(e))
 
 from ansible.module_utils.basic import *
 if __name__ == '__main__':
