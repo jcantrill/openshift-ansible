@@ -1,11 +1,11 @@
 ---
-- local_action: stat path="{{mktemp.stdout}}/{{component}}.key"
+- name: Checking for {{component}}.key
+  stat: path="{{mktemp.stdout}}/{{component}}.key"
   register: key_file
-  become: no
 
-- local_action: stat path="{{mktemp.stdout}}/{{component}}.crt"
+- name: Checking for {{component}}.crt
+  stat: path="{{mktemp.stdout}}/{{component}}.crt"
   register: cert_file
-  become: no
 
 - name: Creating cert req for {{component}}
   command: openssl req -out {{mktemp.stdout}}/{{component}}.csr -new -newkey rsa:2048 -keyout {{mktemp.stdout}}/{{component}}.key -subj "/CN={{component}}/OU=OpenShift/O=Logging/subjectAltName=DNS.1=localhost{{cert_ext.stdout}}" -days 712 -nodes
