@@ -17,13 +17,13 @@
     echo {{ (cert_ext.stdout is defined) | ternary( '-ext san=dns:localhost,ip:127.0.0.1','') }}{{ (cert_ext.stdout is defined) | ternary( cert_ext.stdout, '') }}
   register: extensions
 
-- local_action: stat path="{{mktemp.stdout}}/{{component}}.jks"
+- name: Checking for {{component}}.jks ...
+  stat: path="{{mktemp.stdout}}/{{component}}.jks"
   register: jks_file
-  become: no
 
-- local_action: stat path="{{mktemp.stdout}}/truststore.jks"
+- name: Checking for truststore...
+  stat: path="{{mktemp.stdout}}/truststore.jks"
   register: jks_truststore
-  become: no
 
 - block:
     - shell: >

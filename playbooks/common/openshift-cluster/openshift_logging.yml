@@ -1,4 +1,5 @@
 - name: OpenShift Aggregated Logging
   hosts: all
+  strategy: debug
   roles: 
   - openshift_logging
