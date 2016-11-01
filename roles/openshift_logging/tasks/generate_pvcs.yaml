@@ -5,10 +5,10 @@
     es_pvc_pool: []
     pvc_name: "{{es_pvc_prefix}}-{{item| int +1}}"
     start: "{{es_pvc_names | map('regex_search',es_pvc_prefix+'.*')|select('string')|list|length}}"
-  with_sequence: start={{start}} end={{es_cluster_size}}
+  with_sequence: start={{start}} end={{es_cluster_size - 1}}
   when:
     - es_pvc_size | search('^\d.*')
-    - "{{ es_dc_names | length < es_cluster_size }}"
+    - "{{ es_dc_names | length != es_cluster_size }}"
 
 - name: Generating PersistentVolumeClaims
   template: src=pvc.j2 dest={{mktemp.stdout}}/templates/logging-{{obj_name}}-pvc.yaml
