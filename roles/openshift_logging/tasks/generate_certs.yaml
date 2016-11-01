@@ -2,12 +2,15 @@
 # we will ensure our secrets and configmaps are set up here first
 - name: Generate certificates
   command: "{{ openshift.common.admin_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig ca create-signer-cert --key={{mktemp.stdout}}/ca.key --cert={{mktemp.stdout}}/ca.crt --serial={{mktemp.stdout}}/ca.serial.txt --name=logging-signer-test"
+  check_mode: no
 
 - name: Copy base signing configuration file
   copy: src=signing.conf dest={{mktemp.stdout}}/signing.conf
+  check_mode: no
 
 - name: Generating signing configuration file
   lineinfile: "dest={{mktemp.stdout}}/signing.conf regexp='# Top dir$' line='dir                     = {{mktemp.stdout}}               # Top dir'"
+  check_mode: no
 
 - include: procure_server_certs.yaml
   vars:
@@ -25,14 +28,18 @@
 - name: Copy proxy TLS configuration file
   copy: src=server-tls.json dest={{mktemp.stdout}}/server-tls.json
   when: server_tls_json is undefined
+  check_mode: no
 
 - name: Copy proxy TLS configuration failed_when
   copy: content="{{server_tls_json}}" dest={{mktemp.stdout}}/server-tls.json
   when: server_tls_json is defined
+  check_mode: no
 
 - copy: content="" dest={{mktemp.stdout}}/ca.db
+  check_mode: no
 
 - copy: content="" dest={{mktemp.stdout}}/ca.crt.srl
+  check_mode: no
 
 - name: Generate PEM certs
   include: generate_pems.yaml component={{node_name}}
@@ -46,9 +53,11 @@
 
 - shell: certs=""; for cert in $(echo logging-es{,-ops}); do certs=$certs,dns:$cert; done; echo $certs
   register: elasticsearch_certs
+  check_mode: no
 
 - shell: certs=""; for cert in $(echo logging-es{,-ops}{,-cluster}{,.logging.svc.cluster.local}); do certs=$certs,dns:$cert; done; echo $certs
   register: logging_es_certs
+  check_mode: no
 
 #- shell: index=2; certs=""; for cert in $(echo logging-es{,-ops}); do certs=$certs,DNS.$index=$cert; index=$(($index+1)); done; echo $certs
 #  register: elasticsearch_certs
@@ -73,7 +82,9 @@
 - name: Generate proxy session
   shell: tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c 200
   register: session_secret
+  check_mode: no
 
 - name: Generate oauth client secret
   shell: tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c 64
   register: oauth_secret
+  check_mode: no

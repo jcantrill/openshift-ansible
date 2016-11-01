@@ -6,6 +6,7 @@
     deploy_name: "logging-{{component}}"
     image: "{{image_prefix}}logging-kibana:{{image_version}}"
     proxy_image: "{{image_prefix}}logging-auth-proxy:{{image_version}}"
+  check_mode: no
 
 - name: Generate OPS kibana deploymentconfig
   template: src=kibana.j2 dest={{mktemp.stdout}}/logging-kibana-ops-dc.yaml
@@ -15,6 +16,7 @@
     image: "{{image_prefix}}logging-kibana:{{image_version}}"
     proxy_image: "{{image_prefix}}logging-auth-proxy:{{image_version}}"
     es_host: logging-es-ops
+  check_mode: no
 
 - name: Generate elasticsearch deploymentconfig
   template: src=es.j2 dest={{mktemp.stdout}}/logging-es-dc.yaml
@@ -24,6 +26,7 @@
     deploy_name: "{{deploy_name_prefix}}-abc123"
     image: "{{image_prefix}}logging-elasticsearch:{{image_version}}"
     es_cluster_name: "{{component}}"
+  check_mode: no
 
 - name: Generate OPS elasticsearch deploymentconfig
   template: src=es.j2 dest={{mktemp.stdout}}/logging-es-ops-dc.yaml
@@ -33,6 +36,7 @@
     deploy_name: "{{deploy_name_prefix}}-abc123"
     image: "{{image_prefix}}logging-elasticsearch:{{image_version}}"
     es_cluster_name: "{{component}}"
+  check_mode: no
 
 - name: Generate curator deploymentconfig
   template: src=curator.j2 dest={{mktemp.stdout}}/logging-curator-dc.yaml
@@ -40,6 +44,7 @@
     component: curator
     deploy_name: "logging-{{component}}"
     image: "{{image_prefix}}logging-curator:{{image_version}}"
+  check_mode: no
 
 - name: Generate OPS curator deploymentconfig
   template: src=curator.j2 dest={{mktemp.stdout}}/logging-curator-ops-dc.yaml
@@ -48,3 +53,4 @@
     deploy_name: "logging-{{component}}"
     image: "{{image_prefix}}logging-curator:{{image_version}}"
     es_host: logging-es-ops
+  check_mode: no

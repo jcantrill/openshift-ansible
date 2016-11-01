@@ -19,8 +19,9 @@
   with_sequence: count={{es_cluster_size - openshift_logging_facts.elasticsearch.deploymentconfigs.keys() | length}}
   when:
    - "{{ openshift_logging_facts.elasticsearch.deploymentconfigs.keys() | length < es_cluster_size }}"
-    
-      
+  check_mode: no
+
+
 - name: Generate Elasticsearch DeploymentConfig
   template: src=es.j2 dest={{mktemp.stdout}}/templates/logging-{{deploy_name}}-dc.yaml
   vars:
@@ -34,6 +35,7 @@
     deploy_name: "{{item.1}}"
   with_indexed_items:
     - "{{es_dc_pool | default([])}}"
+  check_mode: no
 
 # --------- Tasks for Operation clusters ---------
 
@@ -42,9 +44,10 @@
   vars:
     es_dcs: "{{openshift_logging_facts.elasticsearch_ops.deploymentconfigs}}"
     cluster_size: "{{es_cluster_size}}"
-  when: 
+  when:
     - logging_use_ops
     - "{{es_dcs | length - cluster_size | abs > 1}}"
+  check_mode: no
 
 - name: Generate PersistentVolumeClaims for Ops
   include: "{{ role_path}}/tasks/generate_pvcs.yaml"
@@ -56,7 +59,8 @@
     es_pvc_size: "{{es_ops_pvc_size}}"
     es_pvc_dynamic: "{{es_ops_pvc_dynamic}}"
   when: logging_use_ops
-      
+  check_mode: no
+
 - name: Init pool of DeploymentConfig names for Elasticsearch for Ops
   set_fact: es_dc_pool_ops={{es_dc_pool_ops | default([]) + [deploy_name]}}
   vars:
@@ -69,7 +73,8 @@
   when:
     - logging_use_ops
     - "{{ openshift_logging_facts.elasticsearch_ops.deploymentconfigs.keys() | length < cluster_size }}"
-      
+  check_mode: no
+
 - name: Generate Elasticsearch DeploymentConfig for Ops
   template: src=es.j2 dest={{mktemp.stdout}}/templates/logging-{{deploy_name}}-dc.yaml
   vars:
@@ -89,4 +94,4 @@
   with_indexed_items:
     - "{{es_dc_pool_ops | default([])}}"
   when: logging_use_ops
-
+  check_mode: no

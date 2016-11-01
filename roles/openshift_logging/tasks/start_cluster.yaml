@@ -2,15 +2,18 @@
 - shell: >
     echo "{{fluentd_nodeselector}}" | cut -d':' -f1
   register: fluentd_nodeselector_key
+  check_mode: no
 
 - shell: >
     echo "{{fluentd_nodeselector}}" | cut -d' ' -f2
   register: fluentd_nodeselector_value
+  check_mode: no
 
 - shell: >
     {{openshift.common.client_binary}} --config={{mktemp.stdout}}/admin.kubeconfig get node -o name | sed "s,^node/,,g"
   register: fluentd_hosts
   when: "'--all' in fluentd_hosts"
+  check_mode: no
 
 - name: start fluentd
   include: label_node.yaml
@@ -25,6 +28,7 @@
 - shell: >
     {{openshift.common.client_binary}} --config={{mktemp.stdout}}/admin.kubeconfig get dc -l component=es -o name -n {{logging_namespace}}
   register: es_dc
+  check_mode: no
 
 - name: start elasticsearch
   include: scale.yaml
@@ -37,6 +41,7 @@
 - shell: >
     {{openshift.common.client_binary}} --config={{mktemp.stdout}}/admin.kubeconfig get dc -l component=kibana -o name -n {{logging_namespace}}
   register: kibana_dc
+  check_mode: no
 
 - name: start kibana
   include: scale.yaml
@@ -49,6 +54,7 @@
 - shell: >
     {{openshift.common.client_binary}} --config={{mktemp.stdout}}/admin.kubeconfig get dc -l component=curator -o name -n {{logging_namespace}}
   register: curator_dc
+  check_mode: no
 
 - name: start curator
   include: scale.yaml
@@ -61,6 +67,7 @@
 - shell: >
     {{openshift.common.client_binary}} --config={{mktemp.stdout}}/admin.kubeconfig get dc -l component=es-ops -o name -n {{logging_namespace}}
   register: es_dc
+  check_mode: no
 
 - name: start elasticsearch-ops
   include: scale.yaml
@@ -74,6 +81,7 @@
 - shell: >
     {{openshift.common.client_binary}} --config={{mktemp.stdout}}/admin.kubeconfig get dc -l component=kibana-ops -o name -n {{logging_namespace}}
   register: kibana_dc
+  check_mode: no
 
 - name: start kibana-ops
   include: scale.yaml
@@ -87,6 +95,7 @@
 - shell: >
     {{openshift.common.client_binary}} --config={{mktemp.stdout}}/admin.kubeconfig get dc -l component=curator-ops -o name -n {{logging_namespace}}
   register: curator_dc
+  check_mode: no
 
 - name: start curator-ops
   include: scale.yaml

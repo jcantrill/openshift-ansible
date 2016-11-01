@@ -5,17 +5,19 @@
     {{ openshift.common.client_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig get project {{logging_namespace}} --no-headers
   register: logging_project_result
   ignore_errors: yes
+  when: not ansible_check_mode
 
 - name: "Create logging project"
   command: >
     {{ openshift.common.admin_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig new-project {{logging_namespace}}
-  when: '"not found" in logging_project_result.stderr'
+  when: not ansible_check_mode and "not found" in logging_project_result.stderr
 
 - include: generate_certs.yaml
 
 - name: Create temp directory for all our templates
   file: path={{mktemp.stdout}}/templates state=directory mode=0755
   changed_when: False
+  check_mode: no
 
 - include: generate_secrets.yaml
 
@@ -28,6 +30,7 @@
   vars:
     secret: "{{oauth_secret.stdout}}"
   when: oauth_secret.stdout is defined
+  check_mode: no
 
 - include: generate_clusterroles.yaml
 
