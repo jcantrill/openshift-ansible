@@ -4,12 +4,12 @@
   command: >
     {{ openshift.common.client_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig get project {{logging_namespace}} --no-headers
   register: logging_project_result
-  ignore_errors: True
+  ignore_errors: yes
 
 - name: "Create logging project"
   command: >
     {{ openshift.common.admin_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig new-project {{logging_namespace}}
-  when: logging_project_result.stdout.startswith("{{logging_namespace}}") == False
+  when: '"not found" in logging_project_result.stderr'
 
 - include: generate_certs.yaml
 
@@ -30,8 +30,6 @@
   when: oauth_secret.stdout is defined
 
 - include: generate_clusterroles.yaml
-
-- include: generate_pvcs.yaml
 
 - include: generate_rolebindings.yaml
 
