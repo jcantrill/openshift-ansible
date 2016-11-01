@@ -132,7 +132,8 @@ class OpenshiftLoggingFacts(OCBaseCommand):
         pvcs = []
         for pvc in pvclist["items"]:
             name = pvc["metadata"]["name"]
-            self.addFactsFor("elasticsearch","pvcs",name,dict())
+            comp = self.comp(name)
+            self.addFactsFor(comp,"pvcs",name,dict())
 
     def factsForDeploymentConfigs(self, namespace):
         self.defaultKeysFor("deploymentconfigs")

@@ -58,9 +58,8 @@
   when: logging_use_ops
       
 - name: Init pool of DeploymentConfig names for Elasticsearch for Ops
-  set_fact: es_dc_pool_ops={{es_dc_pool_ops + [deploy_name]}}
+  set_fact: es_dc_pool_ops={{es_dc_pool_ops | default([]) + [deploy_name]}}
   vars:
-    es_dc_pool_ops: []
     component: es-ops
     es_cluster_name: "{{component}}"
     deploy_name_prefix: "logging-{{component}}"
@@ -88,6 +87,6 @@
     es_recover_expected_nodes: "{{es_ops_recover_expected_nodes}}"
     es_recover_after_time: "{{es_ops_recover_after_time}}"
   with_indexed_items:
-    - "{{es_dc_pool_ops}}"
+    - "{{es_dc_pool_ops | default([])}}"
   when: logging_use_ops
 

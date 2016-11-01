@@ -1,14 +1,13 @@
 ---
 - name: Init pool of PersistentVolumeClaim names
-  set_fact: es_pvc_pool={{es_pvc_pool + [pvc_name]}}
+  set_fact: es_pvc_pool={{es_pvc_pool|default([]) + [pvc_name]}}
   vars:
-    es_pvc_pool: []
     pvc_name: "{{es_pvc_prefix}}-{{item| int}}"
     start: "{{es_pvc_names | map('regex_search',es_pvc_prefix+'.*')|select('string')|list|length}}"
-  with_sequence: start={{start}} end={{es_cluster_size}}
+  with_sequence: start={{start}} end={{ (start > es_cluster_size) | ternary(start, es_cluster_size)}}
   when:
     - es_pvc_size | search('^\d.*')
-    - "{{ es_dc_names | length < es_cluster_size }}"
+    - "{{ es_dc_names|default([]) | length < es_cluster_size }}"
 
 - name: Generating PersistentVolumeClaims
   template: src=pvc.j2 dest={{mktemp.stdout}}/templates/logging-{{obj_name}}-pvc.yaml
