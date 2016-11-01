@@ -3,9 +3,11 @@
     {{ openshift.common.client_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig get node {{host}} --template='{{ '{{index .metadata.labels "' }}{{label}}{{ '"}}' }}'
   register: label_value
   failed_when: label_value.rc == 1 and 'exists' not in label_value.stderr
+  when: not ansible_check_mode
 
 - shell: >
     {{ openshift.common.client_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig label node {{host}} {{label}}={{value}}
   register: label_result
   failed_when: label_result.rc == 1 and 'exists' not in label_result.stderr
   when: label_value.stdout != value
+  when: not ansible_check_mode

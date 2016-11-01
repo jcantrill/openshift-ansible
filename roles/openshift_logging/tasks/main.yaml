@@ -3,6 +3,7 @@
   command: mktemp -d /tmp/openshift-logging-ansible-XXXXXX
   register: mktemp
   changed_when: False
+  check_mode: no
 
 - debug: msg="Created temp dir {{mktemp.stdout}}"
 
@@ -10,12 +11,14 @@
   command: >
     cp {{ openshift_master_config_dir }}/admin.kubeconfig {{ mktemp.stdout }}/admin.kubeconfig
   changed_when: False
+  check_mode: no
 
 - name: Gather OpenShift Logging Facts
   openshift_logging_facts:
     oc_bin: "{{openshift.common.client_binary}}"
     admin_kubeconfig: "{{mktemp.stdout}}/admin.kubeconfig"
     logging_namespace: "{{logging_namespace}}"
+  check_mode: no
 
 - name: Install logging
   include: "{{ role_path }}/tasks/install_{{ install_component }}.yaml"
@@ -36,6 +39,15 @@
     - "{{mktemp.stdout}}/templates/*.yaml"
   loop_control:
     loop_var: file
+  when: not ansible_check_mode
+
+- name: Printing out objects to create
+  debug: msg="{{lookup('file', file)|quote}}"
+  with_fileglob:
+    - "{{mktemp.stdout}}/templates/*.yaml"
+  loop_control:
+    loop_var: file
+  when: ansible_check_mode
 
 - name: Scaling up cluster
   include: start_cluster.yaml
@@ -45,3 +57,4 @@
     name: "{{ mktemp.stdout }}"
     state: absent
   changed_when: False
+  check_mode: no

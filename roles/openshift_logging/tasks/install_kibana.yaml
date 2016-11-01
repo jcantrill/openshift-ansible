@@ -7,6 +7,7 @@
     deploy_name: "logging-{{component}}"
     image: "{{image_prefix}}logging-kibana:{{image_version}}"
     proxy_image: "{{image_prefix}}logging-auth-proxy:{{image_version}}"
+  check_mode: no
 
 - name: Generate OPS kibana deploymentconfig
   template: src=kibana.j2 dest={{mktemp.stdout}}/templates/logging-kibana-ops-dc.yaml
@@ -18,3 +19,4 @@
     proxy_image: "{{image_prefix}}logging-auth-proxy:{{image_version}}"
     es_host: logging-es-ops
   when: logging_use_ops
+  check_mode: no
