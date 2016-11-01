@@ -8,6 +8,7 @@
   when:
     - es_pvc_size | search('^\d.*')
     - "{{ es_dc_names|default([]) | length < es_cluster_size }}"
+  check_mode: no
 
 - name: Generating PersistentVolumeClaims
   template: src=pvc.j2 dest={{mktemp.stdout}}/templates/logging-{{obj_name}}-pvc.yaml
@@ -16,13 +17,14 @@
     size: "{{es_pvc_size}}"
     access_modes:
       - ReadWriteOnce
-  with_items: 
+  with_items:
     - "{{es_pvc_pool | default([])}}"
   loop_control:
     loop_var: claim_name
-  when: 
+  when:
     - not es_pvc_dynamic
     - es_pvc_pool is defined
+  check_mode: no
 
 - name: Generating PersistentVolumeClaims - Dynamic
   template: src=pvc.j2 dest={{mktemp.stdout}}/templates/logging-{{obj_name}}-pvc.yaml
@@ -33,10 +35,11 @@
     size: "{{es_pvc_size}}"
     access_modes:
       - ReadWriteOnce
-  with_items: 
+  with_items:
     - "{{es_pvc_pool|default([])}}"
   loop_control:
     loop_var: claim_name
   when:
     - es_pvc_dynamic
     - es_pvc_pool is defined
+  check_mode: no

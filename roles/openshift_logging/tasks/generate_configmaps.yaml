@@ -16,6 +16,7 @@
         content: "{{es_configmap.stdout}}"
         dest: "{{mktemp.stdout}}/templates/logging-elasticsearch-configmap.yaml"
       when: es_configmap.stdout is defined
+  check_mode: no
 
 - block:
     - copy:
@@ -30,6 +31,7 @@
         content: "{{curator_configmap.stdout}}"
         dest: "{{mktemp.stdout}}/templates/logging-curator-configmap.yaml"
       when: curator_configmap.stdout is defined
+  check_mode: no
 
 - block:
     - copy:
@@ -52,3 +54,4 @@
         content: "{{fluentd_configmap.stdout}}"
         dest: "{{mktemp.stdout}}/templates/logging-fluentd-configmap.yaml"
       when: fluentd_configmap.stdout is defined
+  check_mode: no

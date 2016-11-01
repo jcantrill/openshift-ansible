@@ -6,6 +6,7 @@
     logging_component: curator
     deploy_name: "logging-{{component}}"
     image: "{{image_prefix}}logging-curator:{{image_version}}"
+  check_mode: no
 
 - name: Generate OPS curator deploymentconfig
   template: src=curator.j2 dest={{mktemp.stdout}}/templates/logging-curator-ops-dc.yaml
@@ -16,3 +17,4 @@
     image: "{{image_prefix}}logging-curator:{{image_version}}"
     es_host: logging-es-ops
   when: logging_use_ops
+  check_mode: no

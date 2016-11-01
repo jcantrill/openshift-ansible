@@ -9,6 +9,7 @@
   shell: echo "{{chain_certs}}{{ (oid) | ternary(',oid:1.2.3.4.5.5','') }}"
   register: cert_ext
   when: chain_certs is defined and oid is defined
+  check_mode: no
 
 - debug: msg="extensions are {{cert_ext.stdout}}"
   when: cert_ext.stdout is defined
@@ -16,14 +17,17 @@
 - shell: >
     echo {{ (cert_ext.stdout is defined) | ternary( '-ext san=dns:localhost,ip:127.0.0.1','') }}{{ (cert_ext.stdout is defined) | ternary( cert_ext.stdout, '') }}
   register: extensions
+  check_mode: no
 
 - name: Checking for {{component}}.jks ...
   stat: path="{{mktemp.stdout}}/{{component}}.jks"
   register: jks_file
+  check_mode: no
 
 - name: Checking for truststore...
   stat: path="{{mktemp.stdout}}/truststore.jks"
   register: jks_truststore
+  check_mode: no
 
 - block:
     - shell: >
@@ -42,8 +46,10 @@
          keytool -import -file {{mktemp.stdout}}/{{component}}-jks.crt -keystore {{mktemp.stdout}}/{{component}}.jks -storepass kspass -noprompt -alias {{component}}
 
   when: not jks_file.stat.exists
+  check_mode: no
 
 - block:
     - shell: >
         keytool -import -file {{mktemp.stdout}}/ca.crt -keystore {{mktemp.stdout}}/truststore.jks -storepass tspass -noprompt -alias sig-ca
   when: not jks_truststore.stat.exists
+  check_mode: no
