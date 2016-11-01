@@ -3,7 +3,9 @@ kind: RoleBinding
 metadata:
   name: {{obj_name}}
 roleRef:
+{% if roleRef.kind is defined %}
   kind: {{ roleRef.kind }}
+{% endif %}
   name: {{ roleRef.name }}
 subjects:
 {% for sub in subjects %}

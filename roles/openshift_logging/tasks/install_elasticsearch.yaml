@@ -10,13 +10,12 @@
     es_dc_names: "{{openshift_logging_facts.elasticsearch.deploymentconfigs.keys()}}"
 
 - name: Init pool of DeploymentConfig names for Elasticsearch
-  set_fact: es_dc_pool={{es_dc_pool + [deploy_name]}}
+  set_fact: es_dc_pool={{es_dc_pool | default([]) + [deploy_name]}}
   vars:
     component: es
     es_cluster_name: "{{component}}"
     deploy_name_prefix: "logging-{{component}}"
     deploy_name: "{{deploy_name_prefix}}-{{'abcdefghijklmnopqrstuvwxyz0123456789'|random_word(8)}}"
-    es_dc_pool: []
   with_sequence: count={{es_cluster_size - openshift_logging_facts.elasticsearch.deploymentconfigs.keys() | length}}
   when:
    - "{{ openshift_logging_facts.elasticsearch.deploymentconfigs.keys() | length < es_cluster_size }}"
@@ -34,7 +33,7 @@
     pvc_claim: "{{(volume_names | length > item.0) | ternary(volume_names[item.0], None)}}"
     deploy_name: "{{item.1}}"
   with_indexed_items:
-    - "{{es_dc_pool}}"
+    - "{{es_dc_pool | default([])}}"
 
 # --------- Tasks for Operation clusters ---------
 
@@ -50,7 +49,6 @@
 - name: Generate PersistentVolumeClaims for Ops
   include: "{{ role_path}}/tasks/generate_pvcs.yaml"
   vars:
-    es_pvc_pool: []
     es_pvc_names: "{{openshift_logging_facts.elasticsearch_ops.pvcs.keys()}}"
     es_dc_names: "{{openshift_logging_facts.elasticsearch_ops.deploymentconfigs.keys()}}"
     es_pvc_prefix: "{{es_ops_pvc_prefix}}"
@@ -84,11 +82,11 @@
     pvc_claim: "{{(volume_names | length > item.0) | ternary(volume_names[item.0], None)}}"
     deploy_name: "{{item.1}}"
     es_cluster_name: "{{component}}"
-    es_instance_ram: es_ops_instance_ram
-    es_node_quorum: es_ops_node_quorum
-    es_recover_after_nodes: es_ops_recover_after_nodes
-    es_recover_expected_nodes: es_ops_recover_expected_nodes
-    es_recover_after_time: es_ops_recover_after_time
+    es_instance_ram: "{{es_ops_instance_ram}}"
+    es_node_quorum: "{{es_ops_node_quorum}}"
+    es_recover_after_nodes: "{{es_ops_recover_after_nodes}}"
+    es_recover_expected_nodes: "{{es_ops_recover_expected_nodes}}"
+    es_recover_after_time: "{{es_ops_recover_after_time}}"
   with_indexed_items:
     - "{{es_dc_pool_ops}}"
   when: logging_use_ops

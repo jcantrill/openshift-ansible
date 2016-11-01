@@ -21,7 +21,7 @@
   include: "{{ role_path }}/tasks/install_{{ install_component }}.yaml"
   when: openshift_hosted_logging_install | default(true) | bool
   with_items:
-    - logging
+    - support
     - elasticsearch
     - kibana
     - curator

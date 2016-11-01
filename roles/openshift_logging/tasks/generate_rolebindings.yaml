@@ -4,7 +4,6 @@
   vars:
     obj_name: logging-elasticsearch-view-role
     roleRef:
-      kind: ClusterRole
       name: view
     subjects:
       - kind: ServiceAccount
