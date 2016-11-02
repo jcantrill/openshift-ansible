@@ -117,6 +117,9 @@
 - name: generate password for htpasswd file for hawkular metrics
   shell: cat /dev/urandom | tr -dc _A-Z-a-z-0-9 | head -c15
   register: hawkular_metrics_password
+- name: generate password for hawkular metrics jgroups
+  shell: cat /dev/urandom | tr -dc _A-Z-a-z-0-9 | head -c15 | base64
+  register: hawkular_metrics_jgroups_password
 - name: generate htpasswd file for hawkular metrics
   shell: >
     htpasswd -cb
@@ -160,6 +163,8 @@
       hawkular-metrics.keystore.alias: "{{ 'hawkular-metrics'|b64encode }}"
       hawkular-metrics.htpasswd.file: >
         "{{ hawkular_metrics_secret.results[4].stdout }}"
+      hawkular-metrics.jgroups.password: >
+        "{{ hawkular_metrics_jgroups_password.stdout }}"
 - name: generate hawkular-metrics-certificate secret template
   template:
     src: secret.j2
