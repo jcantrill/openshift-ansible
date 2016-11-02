@@ -9,5 +9,6 @@
     {{ openshift.common.client_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig scale {{object}} --replicas={{desired}} -n {{logging_namespace}}
   register: scale_result
   failed_when: scale_result.rc == 1 and 'exists' not in scale_result.stderr
-  when: replica_count.stdout != desired
-  when: not ansible_check_mode
+  when:
+  - replica_count.stdout != desired
+  - not ansible_check_mode

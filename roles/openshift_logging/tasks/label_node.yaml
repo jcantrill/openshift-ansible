@@ -6,8 +6,9 @@
   when: not ansible_check_mode
 
 - shell: >
-    {{ openshift.common.client_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig label node {{host}} {{label}}={{value}}
+    {{ openshift.common.client_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig label node {{host}} {{label}}={{value}} --overwrite
   register: label_result
   failed_when: label_result.rc == 1 and 'exists' not in label_result.stderr
-  when: label_value.stdout != value
-  when: not ansible_check_mode
+  when:
+  - label_value.stdout != value
+  - not ansible_check_mode

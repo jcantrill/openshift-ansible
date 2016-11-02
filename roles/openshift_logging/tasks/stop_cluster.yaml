@@ -18,7 +18,7 @@
     host: "{{fluentd_host}}"
     label: "{{fluentd_nodeselector_key.stdout}}"
     value: "-"
-  with_items: "{{fluentd_hosts.stdout}}"
+  with_items: "{{fluentd_hosts.stdout_lines}}"
   loop_control:
     loop_var: fluentd_host
 
@@ -30,7 +30,7 @@
   include: scale.yaml
   vars:
     desired: 0
-  with_items: "{{es_dc.stdout}}"
+  with_items: "{{es_dc.stdout_lines}}"
   loop_control:
     loop_var: object
 
@@ -42,7 +42,7 @@
   include: scale.yaml
   vars:
     desired: 0
-  with_items: "{{kibana_dc.stdout}}"
+  with_items: "{{kibana_dc.stdout_lines}}"
   loop_control:
     loop_var: object
 
@@ -54,7 +54,7 @@
   include: scale.yaml
   vars:
     desired: 0
-  with_items: "{{curator_dc.stdout}}"
+  with_items: "{{curator_dc.stdout_lines}}"
   loop_control:
     loop_var: object
 
@@ -66,7 +66,7 @@
   include: scale.yaml
   vars:
     desired: 0
-  with_items: "{{es_dc.stdout}}"
+  with_items: "{{es_dc.stdout_lines}}"
   loop_control:
     loop_var: object
   when: logging_use_ops
@@ -79,7 +79,7 @@
   include: scale.yaml
   vars:
     desired: 0
-  with_items: "{{kibana_dc.stdout}}"
+  with_items: "{{kibana_dc.stdout_lines}}"
   loop_control:
     loop_var: object
   when: logging_use_ops
@@ -92,7 +92,7 @@
   include: scale.yaml
   vars:
     desired: 0
-  with_items: "{{curator_dc.stdout}}"
+  with_items: "{{curator_dc.stdout_lines}}"
   loop_control:
     loop_var: object
   when: logging_use_ops
