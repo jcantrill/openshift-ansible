@@ -4,6 +4,7 @@
   register: mktemp
   changed_when: False
   check_mode: no
+  tags: logging_init
 
 - debug: msg="Created temp dir {{mktemp.stdout}}"
 
@@ -12,12 +13,14 @@
     cp {{ openshift_master_config_dir }}/admin.kubeconfig {{ mktemp.stdout }}/admin.kubeconfig
   changed_when: False
   check_mode: no
+  tags: logging_init
 
 - name: Gather OpenShift Logging Facts
   openshift_logging_facts:
     oc_bin: "{{openshift.common.client_binary}}"
     admin_kubeconfig: "{{mktemp.stdout}}/admin.kubeconfig"
     logging_namespace: "{{logging_namespace}}"
+  tags: logging_facts
   check_mode: no
 
 - name: Install logging

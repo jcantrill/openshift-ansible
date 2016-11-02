@@ -16,7 +16,7 @@
     es_cluster_name: "{{component}}"
     deploy_name_prefix: "logging-{{component}}"
     deploy_name: "{{deploy_name_prefix}}-{{'abcdefghijklmnopqrstuvwxyz0123456789'|random_word(8)}}"
-  with_sequence: count={{es_cluster_size - openshift_logging_facts.elasticsearch.deploymentconfigs.keys() | length}}
+  with_sequence: count={{(es_cluster_size - openshift_logging_facts.elasticsearch.deploymentconfigs.keys() | length) | abs}}
   when:
    - "{{ openshift_logging_facts.elasticsearch.deploymentconfigs.keys() | length < es_cluster_size }}"
   check_mode: no
