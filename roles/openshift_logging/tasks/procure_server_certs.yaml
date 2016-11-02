@@ -1,4 +1,14 @@
 ---
+- name: Checking for {{ procure_component }}.crt
+  stat: path="{{generated_certs_dir}}/{{ procure_component }}.crt"
+  register: component_cert_file
+  check_mode: no
+
+- name: Checking for {{ procure_component }}.key
+  stat: path="{{generated_certs_dir}}/{{ procure_component }}.key"
+  register: component_key_file
+  check_mode: no
+
 - name: Procure Server cert for {{ procure_component }}
   command: echo "{{ lookup('env', '{{procure_component}}' + '_crt') }}"
   register: procure_component_crt
@@ -12,16 +22,33 @@
   check_mode: no
 
 - name: Procure Server cert for {{ procure_component }}
-  command: "{{ openshift.common.admin_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig ca create-server-cert --key={{mktemp.stdout}}/{{procure_component}}.key --cert={{mktemp.stdout}}/{{procure_component}}.crt --hostnames={{hostnames|quote}} --signer-cert={{mktemp.stdout}}/ca.crt --signer-key={{mktemp.stdout}}/ca.key --signer-serial={{mktemp.stdout}}/ca.serial.txt"
-  when: hostnames is defined
+  command: >
+     {{ openshift.common.admin_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig ca create-server-cert
+     --key={{generated_certs_dir}}/{{procure_component}}.key --cert={{generated_certs_dir}}/{{procure_component}}.crt
+     --hostnames={{hostnames|quote}} --signer-cert={{generated_certs_dir}}/ca.crt --signer-key={{generated_certs_dir}}/ca.key
+     --signer-serial={{generated_certs_dir}}/ca.serial.txt
   check_mode: no
+  when:
+    - hostnames is defined
+    - not component_key_file.stat.exists
+    - not component_cert_file.stat.exists
 
 - name: Procure Server cert for {{ procure_component }}
-  copy: content="{{procure_component_key}}" dest={{mktemp.stdout}}/{{procure_component}}.key
-  when: hostnames is undefined and {{ procure_component }}_crt is defined and {{ procure_component }}_key is defined
+  copy: content="{{procure_component_key}}" dest={{generated_certs_dir}}/{{procure_component}}.key
   check_mode: no
+  when:
+    - hostnames is undefined
+    - "{{ procure_component }}_crt is defined"
+    - "{{ procure_component }}_key is defined"
+    - not component_key_file.stat.exists
+    - not component_cert_file.stat.exists
 
 - name: Procure Server cert for {{ procure_component }}
-  copy: content="{{procure_component_crt}}" dest={{mktemp.stdout}}/{{procure_component}}.crt
-  when: hostnames is undefined and {{ procure_component }}_crt is defined and {{ procure_component }}_key is defined
+  copy: content="{{procure_component_crt}}" dest={{generated_certs_dir}}/{{procure_component}}.crt
   check_mode: no
+  when:
+    - hostnames is undefined
+    - "{{ procure_component }}_crt is defined"
+    - "{{ procure_component }}_key is defined"
+    - not component_key_file.stat.exists
+    - not component_cert_file.stat.exists

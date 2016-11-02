@@ -5,6 +5,7 @@ logging_use_ops: False
 master_url: https://kubernetes.default.svc.cluster.local
 public_master_url: https://localhost:8443
 logging_namespace: logging
+etcd_generated_certs_dir: /etc/etcd/generated_certs
 
 curator_default_days: 30
 curator_run_hour: 0
