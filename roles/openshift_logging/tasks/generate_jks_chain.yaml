@@ -31,19 +31,24 @@
 
 - block:
     - shell: >
-        keytool -genkey -alias {{component}} -keystore {{generated_certs_dir}}/{{component}}.jks -keypass kspass -storepass kspass -keyalg RSA -keysize 2048 -validity 712 -dname "CN={{component}}, OU=OpenShift, O=Logging" {{extensions.stdout}}
+        keytool -genkey -alias {{component}} -keystore {{generated_certs_dir}}/{{component}}.jks -keypass kspass -storepass kspass
+        -keyalg RSA -keysize 2048 -validity 712 -dname "CN={{component}}, OU=OpenShift, O=Logging" {{extensions.stdout}}
 
     - shell: >
-        keytool -certreq -alias {{component}} -keystore {{generated_certs_dir}}/{{component}}.jks -storepass kspass -file {{generated_certs_dir}}/{{component}}-jks.csr -keyalg RSA -dname "CN={{component}}, OU=OpenShift, O=Logging" {{extensions.stdout}}
+        keytool -certreq -alias {{component}} -keystore {{generated_certs_dir}}/{{component}}.jks -storepass kspass
+        -file {{generated_certs_dir}}/{{component}}-jks.csr -keyalg RSA -dname "CN={{component}}, OU=OpenShift, O=Logging" {{extensions.stdout}}
 
     - shell: >
-        openssl ca -in {{generated_certs_dir}}/{{component}}-jks.csr -notext -out {{generated_certs_dir}}/{{component}}-jks.crt -config {{generated_certs_dir}}/signing.conf -extensions v3_req -batch -extensions server_ext
+        openssl ca -in {{generated_certs_dir}}/{{component}}-jks.csr -notext -out {{generated_certs_dir}}/{{component}}-jks.crt
+        -config {{generated_certs_dir}}/signing.conf -extensions v3_req -batch -extensions server_ext
 
     - shell: >
-        keytool -import -file {{generated_certs_dir}}/ca.crt -keystore {{generated_certs_dir}}/{{component}}.jks -storepass kspass -noprompt -alias sig-ca
+        keytool -import -file {{generated_certs_dir}}/ca.crt -keystore {{generated_certs_dir}}/{{component}}.jks
+        -storepass kspass -noprompt -alias sig-ca
 
     - shell: >
-         keytool -import -file {{generated_certs_dir}}/{{component}}-jks.crt -keystore {{generated_certs_dir}}/{{component}}.jks -storepass kspass -noprompt -alias {{component}}
+         keytool -import -file {{generated_certs_dir}}/{{component}}-jks.crt -keystore {{generated_certs_dir}}/{{component}}.jks
+         -storepass kspass -noprompt -alias {{component}}
 
   when: not jks_file.stat.exists
   check_mode: no
