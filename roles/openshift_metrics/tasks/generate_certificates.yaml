@@ -25,14 +25,14 @@
 # TODO maybe there's an easier way to get the service accounts' ca crt?
 - name: get heapster service account secrets
   shell: >
-    {{ openshift.common.client_binary }} -n '{{ project }}'
+    {{ openshift.common.client_binary }} -n '{{ metrics_project }}'
     get serviceaccount/default
     --template '{{ '{{range .secrets}}{{println .name}}{{end}}' }}'
     | grep ^default-token-
   register: sa_secret
 - name: get heapster service account ca
   command: >
-    {{ openshift.common.client_binary }} -n '{{ project }}'
+    {{ openshift.common.client_binary }} -n '{{ metrics_project }}'
     get 'secret/{{ sa_secret.stdout }}'
     --template '{{ '{{index .data "ca.crt"}}' }}'
   register: sa_secret

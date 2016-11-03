@@ -1,7 +1,7 @@
 ---
 - name: remove metrics components
   command: >
-    {{ openshift.common.client_binary }} -n '{{ project }}'
+    {{ openshift.common.client_binary }} -n '{{ metrics_project }}'
     delete --selector=metrics-infra
     svc,replicationcontrollers,serviceaccounts,secrets,templates,routes,pvc
   register: delete_metrics
@@ -15,9 +15,9 @@
 - name: remove heapster cluster role binding
   command: >
     {{ openshift.common.admin_binary }} policy remove-cluster-role-from-user
-    cluster-reader 'system:serviceaccount:{{ project }}:heapster'
+    cluster-reader 'system:serviceaccount:{{ metrics_project }}:heapster'
   when: >
-    'system:serviceaccount:{{ project }}:heapster'
+    'system:serviceaccount:{{ metrics_project }}:heapster'
     in clusterreader_rolebindings.stdout
 - name: test view permissions for the hawkular service account
   command: >
@@ -30,5 +30,5 @@
     {{ openshift.common.admin_binary }} policy remove-role-from-user
     view hawkular
   when: >
-    'system:serviceaccount:{{ project }}:hawkular'
+    'system:serviceaccount:{{ metrics_project }}:hawkular'
     in view_rolebindings.stdout

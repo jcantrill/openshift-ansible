@@ -10,14 +10,14 @@
 - name: add the cluster-reader role to the heapster service account
   command: >
     '{{ openshift.common.admin_binary }}' policy
-    -n '{{ project }}' add-cluster-role-to-user
-    cluster-reader 'system:serviceaccount:{{ project }}:heapster'
+    -n '{{ metrics_project }}' add-cluster-role-to-user
+    cluster-reader 'system:serviceaccount:{{ metrics_project }}:heapster'
   when: >
-    'system:serviceaccount:{{ project }}:heapster'
+    'system:serviceaccount:{{ metrics_project }}:heapster'
     not in clusterreader_rolebindings.stdout
 - name: create heapster objects
   command: >
-    {{ openshift.common.client_binary }} -n '{{ project }}'
+    {{ openshift.common.client_binary }} -n '{{ metrics_project }}'
     create -f '{{ mktemp.stdout }}/templates/{{ item }}'
   with_items:
   - heapster_secrets.yaml

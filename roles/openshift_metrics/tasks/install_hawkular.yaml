@@ -15,13 +15,13 @@
 - name: add the view role to the hawkular service account
   command: >
     '{{ openshift.common.admin_binary }}' policy
-    -n '{{ project }}' add-role-to-user view hawkular
+    -n '{{ metrics_project }}' add-role-to-user view hawkular
   when: >
-    'system:serviceaccount:{{ project }}:hawkular'
+    'system:serviceaccount:{{ metrics_project }}:hawkular'
     not in view_rolebindings.stdout
 - name: create hawkular metrics objects
   command: >
-    {{ openshift.common.client_binary }} -n '{{ project }}'
+    {{ openshift.common.client_binary }} -n '{{ metrics_project }}'
     create -f '{{ mktemp.stdout }}/templates/{{ item }}'
   with_items:
   - hawkular_metrics_secrets.yaml
@@ -37,7 +37,7 @@
   - metrics-cassandra-sa.yaml
 - name: process cassandra template
   shell: >
-    {{ openshift.common.client_binary }} -n '{{ project }}'
+    {{ openshift.common.client_binary }} -n '{{ metrics_project }}'
     process -f '{{ mktemp.stdout }}/templates/hawkular_cassandra_rc.yaml'
     --value 'NODE={{ item }}'
     {% if item == '1' %}--value MASTER=true{% endif %}
@@ -45,7 +45,7 @@
   with_sequence: start=1 end={{ hawkular_cassandra_nodes }}
 - name: create the hawkular-metrics route
   command: >
-    {{ openshift.common.client_binary }} -n '{{ project }}'
+    {{ openshift.common.client_binary }} -n '{{ metrics_project }}'
     create route reencrypt hawkular-metrics
     --hostname='{{ hawkular_metrics_hostname }}'
     --service=hawkular-metrics
