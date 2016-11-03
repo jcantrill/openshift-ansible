@@ -5,14 +5,16 @@
   command: >
     {{ openshift.common.client_binary }} get clusterrolebindings
     -o jsonpath='{.items[?(@.roleRef.name == "cluster-reader")].userNames}'
-  register: ret
+  register: clusterreader_rolebindings
   changed_when: false
 - name: add the cluster-reader role to the heapster service account
   command: >
     '{{ openshift.common.admin_binary }}' policy
     -n '{{ project }}' add-cluster-role-to-user
     cluster-reader 'system:serviceaccount:{{ project }}:heapster'
-  when: "'system:serviceaccount:{{ project }}:heapster' not in ret.stdout"
+  when: >
+    'system:serviceaccount:{{ project }}:heapster'
+    not in clusterreader_rolebindings.stdout
 - name: create heapster objects
   command: >
     {{ openshift.common.client_binary }} -n '{{ project }}'

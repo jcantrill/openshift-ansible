@@ -10,13 +10,15 @@
   command: >
     {{ openshift.common.client_binary }} get rolebindings
     -o jsonpath='{.items[?(@.roleRef.name == "view")].userNames}'
-  register: ret
+  register: view_rolebindings
   changed_when: false
 - name: add the view role to the hawkular service account
   command: >
     '{{ openshift.common.admin_binary }}' policy
     -n '{{ project }}' add-role-to-user view hawkular
-  when: "'system:serviceaccount:{{ project }}:hawkular' not in ret.stdout"
+  when: >
+    'system:serviceaccount:{{ project }}:hawkular'
+    not in view_rolebindings.stdout
 - name: create hawkular metrics objects
   command: >
     {{ openshift.common.client_binary }} -n '{{ project }}'
