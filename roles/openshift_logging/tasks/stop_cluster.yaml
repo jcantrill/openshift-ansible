@@ -17,7 +17,7 @@
   vars:
     host: "{{fluentd_host}}"
     label: "{{fluentd_nodeselector_key.stdout}}"
-    value: "-"
+    unlabel: True
   with_items: "{{fluentd_hosts.stdout_lines}}"
   loop_control:
     loop_var: fluentd_host

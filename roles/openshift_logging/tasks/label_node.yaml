@@ -11,5 +11,16 @@
   register: label_result
   failed_when: label_result.rc == 1 and 'exists' not in label_result.stderr
   when:
+  - value is defined
   - label_value.stdout != value
+  - unlabel is not defined or not unlabel
+  - not ansible_check_mode
+
+- shell: >
+    {{ openshift.common.client_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig label node {{host}} {{label}}-
+  register: label_result
+  failed_when: label_result.rc == 1 and 'exists' not in label_result.stderr
+  when:
+  - unlabel is defined
+  - unlabel
   - not ansible_check_mode
