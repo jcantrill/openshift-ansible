@@ -39,6 +39,9 @@ es_pvc_prefix: logging-es
 es_recover_after_time: 5m
 es_storage_group: 65534
 
+# allow cluster-admin or cluster-reader to view operations index
+es_ops_allow_cluster_reader: False
+
 es_ops_host: logging-es-ops
 es_ops_port: 9200
 es_ops_ca: /etc/fluent/keys/ca

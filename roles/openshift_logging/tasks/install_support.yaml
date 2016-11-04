@@ -45,4 +45,6 @@
 
 - include: generate_rolebindings.yaml
 
+- include: generate_clusterrolebindings.yaml
+
 - include: generate_serviceaccounts.yaml

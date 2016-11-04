@@ -9,9 +9,11 @@ rules:
     - {{ kind }}
 {% endfor %}
   apiGroups:
+{% if rule.api_groups is defined %}
 {% for group in rule.api_groups %}
     - {{ group }}
 {% endfor %}
+{% endif %}
   verbs:
 {% for verb in rule.verbs %}
     - {{ verb }}

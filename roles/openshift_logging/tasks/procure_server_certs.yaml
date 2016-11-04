@@ -9,19 +9,19 @@
   register: component_key_file
   check_mode: no
 
-- name: Procure Server cert for {{ procure_component }}
+- name: Trying to discover server cert variable name for {{ procure_component }}
   command: echo "{{ lookup('env', '{{procure_component}}' + '_crt') }}"
   register: procure_component_crt
   when: hostnames is undefined and {{ procure_component }}_crt is defined and {{ procure_component }}_key is defined
   check_mode: no
 
-- name: Procure Server cert for {{ procure_component }}
+- name: Trying to discover the server key variable name for {{ procure_component }}
   command: echo "{{ lookup('env', '{{procure_component}}' + '_key') }}"
   register: procure_component_key
   when: hostnames is undefined and {{ procure_component }}_crt is defined and {{ procure_component }}_key is defined
   check_mode: no
 
-- name: Procure Server cert for {{ procure_component }}
+- name: Creating signed server cert and key for {{ procure_component }}
   command: >
      {{ openshift.common.admin_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig ca create-server-cert
      --key={{generated_certs_dir}}/{{procure_component}}.key --cert={{generated_certs_dir}}/{{procure_component}}.crt
@@ -33,7 +33,7 @@
     - not component_key_file.stat.exists
     - not component_cert_file.stat.exists
 
-- name: Procure Server cert for {{ procure_component }}
+- name: Copying server key for {{ procure_component }} to generated certs directory
   copy: content="{{procure_component_key}}" dest={{generated_certs_dir}}/{{procure_component}}.key
   check_mode: no
   when:
@@ -43,7 +43,7 @@
     - not component_key_file.stat.exists
     - not component_cert_file.stat.exists
 
-- name: Procure Server cert for {{ procure_component }}
+- name: Copying Server cert for {{ procure_component }} to generated certs directory
   copy: content="{{procure_component_crt}}" dest={{generated_certs_dir}}/{{procure_component}}.crt
   check_mode: no
   when:
