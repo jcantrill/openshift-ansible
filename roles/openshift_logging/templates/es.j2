@@ -82,7 +82,7 @@ spec:
               mountPath: /etc/elasticsearch/secret
               readOnly: true
             - name: elasticsearch-config
-              mountPath: /usr/share/elasticsearch/config
+              mountPath: /usr/share/java/elasticsearch/config
               readOnly: true
             - name: elasticsearch-storage
               mountPath: /elasticsearch/persistent
@@ -94,10 +94,9 @@ spec:
           configMap:
             name: logging-elasticsearch
         - name: elasticsearch-storage
-{% if pvc_claim is defined and pvc_claim | trim | length > 0 %}    
+{% if pvc_claim is defined and pvc_claim | trim | length > 0 %}
           persistentVolumeClaim:
             claimName: {{pvc_claim}}
 {% else %}
           emptyDir: {}
 {% endif %}
-

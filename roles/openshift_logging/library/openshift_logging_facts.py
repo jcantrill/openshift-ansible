@@ -62,7 +62,9 @@ class OCBaseCommand(object):
             out, err = process.communicate(cmd)
             if len(err) > 0:
                 if 'not found' in err:
-                    return dict()
+                    return {'items':[]}
+                if 'No resources found' in err:
+                    return {'items':[]}
                 raise Exception(err)
         except Exception as e:
             err = "There was an exception trying to run the command '"+ " ".join(cmd) +"' " + str(e)
