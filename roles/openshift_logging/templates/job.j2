@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: jks-cert-gen
+spec:
+  template:
+    metadata:
+      name: jks-cert-gen
+    spec:
+      containers:
+      - name: jks-cert-gen
+        image: {{image_prefix}}logging-elasticsearch:{{image_version}}
+        command: ["sh",  "generate-jks.sh"]
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /opt/app-root/src
+          name: certmount
+      restartPolicy: Never
+      serviceAccount: aggregated-logging-fluentd
+      volumes:
+      - hostPath:
+          path: {{host_dir}}
+        name: certmount
