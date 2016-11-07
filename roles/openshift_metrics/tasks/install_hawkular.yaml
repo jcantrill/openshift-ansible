@@ -6,6 +6,34 @@
   with_items:
   - hawkular_metrics_rc
   - hawkular_cassandra_rc
+- name: generate hawkular-cassandra persistent volume claims
+  template:
+    src: pvc.j2
+    dest: "{{ mktemp.stdout }}/templates/hawkular-cassandra-pvc{{ item }}.yaml"
+  vars:
+    obj_name: "{{ hawkular_cassandra_pv_prefix }}-{{ item }}"
+    labels:
+      metrics-infra: hawkular-cassandra
+    access_modes:
+    - ReadWriteOnce
+    size: "{{ hawkular_cassandra_pv_size }}"
+  with_sequence: count={{ hawkular_cassandra_nodes }}
+  when: hawkular_cassandra_storage_type == 'pv'
+- name: generate hawkular-cassandra persistent volume claims (dynamic)
+  template:
+    src: pvc.j2
+    dest: "{{ mktemp.stdout }}/templates/hawkular-cassandra-pvc{{ item }}.yaml"
+  vars:
+    obj_name: "{{ hawkular_cassandra_pv_prefix }}-{{ item }}"
+    labels:
+      metrics-infra: hawkular-cassandra
+    annotations:
+      volume.alpha.kubernetes.io/storage-class: dynamic
+    access_modes:
+    - ReadWriteOnce
+    size: "{{ hawkular_cassandra_pv_size }}"
+  with_sequence: count={{ hawkular_cassandra_nodes }}
+  when: hawkular_cassandra_storage_type == 'dynamic'
 - name: test view permission for the hawkular service account
   command: >
     {{ openshift.common.client_binary }} get rolebindings
@@ -36,6 +64,12 @@
   - metrics-hawkular-cassandra-svc.yaml
   - metrics-hawkular-cassandra-nodes-svc.yaml
   - metrics-cassandra-sa.yaml
+- name: create pvcs
+  command: >
+    {{ openshift.common.client_binary }} -n '{{ metrics_project }}'
+    create -f {{ item }}
+  with_fileglob:
+  - "{{ mktemp.stdout }}/templates/hawkular-cassandra-pvc*.yaml"
 - name: process cassandra template
   shell: >
     {{ openshift.common.client_binary }} -n '{{ metrics_project }}'
