@@ -15,7 +15,8 @@
 - name: add the view role to the hawkular service account
   command: >
     '{{ openshift.common.admin_binary }}' policy
-    -n '{{ metrics_project }}' add-role-to-user view hawkular
+    -n '{{ metrics_project }}' add-role-to-user view
+    --serviceaccount=hawkular
   when: >
     'system:serviceaccount:{{ metrics_project }}:hawkular'
     not in view_rolebindings.stdout

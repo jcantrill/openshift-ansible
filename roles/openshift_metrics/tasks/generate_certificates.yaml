@@ -118,13 +118,20 @@
   shell: cat /dev/urandom | tr -dc _A-Z-a-z-0-9 | head -c15
   register: hawkular_metrics_password
 - name: generate password for hawkular metrics jgroups
-  shell: cat /dev/urandom | tr -dc _A-Z-a-z-0-9 | head -c15 | base64
+  shell: cat /dev/urandom | tr -dc _A-Z-a-z-0-9 | head -c15
   register: hawkular_metrics_jgroups_password
 - name: generate htpasswd file for hawkular metrics
   shell: >
     htpasswd -cb
     "{{ mktemp.stdout|quote }}/certs/hawkular-metrics.htpasswd" hawkular
     '{{ hawkular_metrics_password.stdout }}'
+- name: generate the jgroups keystore
+  command: >
+    keytool -genseckey -alias hawkular
+    -keypass {{ hawkular_metrics_jgroups_password.stdout }}
+    -storepass {{ hawkular_metrics_jgroups_password.stdout }}
+    -keyalg Blowfish -keysize 56 -storetype JCEKS
+    -keystore {{ mktemp.stdout }}/certs/hawkular-jgroups.keystore
 - name: read files for the hawkular-metrics secret
   command: >
     base64 --wrap 0 "{{ mktemp.stdout }}/certs/{{ item }}"
@@ -143,6 +150,7 @@
   - hawkular-cassandra-truststore.pwd
   - hawkular-cassandra.pem
   - hawkular-cassandra.cert
+  - hawkular-jgroups.keystore
 - name: generate hawkular-metrics-secrets secret template
   template:
     src: secret.j2
@@ -163,8 +171,11 @@
       hawkular-metrics.keystore.alias: "{{ 'hawkular-metrics'|b64encode }}"
       hawkular-metrics.htpasswd.file: >
         "{{ hawkular_metrics_secret.results[4].stdout }}"
-      hawkular-metrics.jgroups.password: >
-        "{{ hawkular_metrics_jgroups_password.stdout }}"
+      hawkular-metrics.jgroups.keystore.password: >
+        "{{ hawkular_metrics_jgroups_password.stdout|b64encode }}"
+      hawkular-metrics.jgroups.keystore: >
+        "{{ hawkular_metrics_secret.results[13].stdout }}"
+      hawkular-metrics.jgroups.alias: "{{ 'hawkular'|b64encode }}"
 - name: generate hawkular-metrics-certificate secret template
   template:
     src: secret.j2
