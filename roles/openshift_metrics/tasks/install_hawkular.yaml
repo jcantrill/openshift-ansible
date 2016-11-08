@@ -1,11 +1,16 @@
 ---
-- name: generate replication controller templates
+- name: generate hawkular-metrics replication controller
   template:
-    src: "{{ item }}.j2"
-    dest: "{{ mktemp.stdout }}/templates/{{ item }}.yaml"
-  with_items:
-  - hawkular_metrics_rc
-  - hawkular_cassandra_rc
+    src: hawkular_metrics_rc.j2
+    dest: "{{ mktemp.stdout }}/templates/hawkular_metrics_rc.yaml"
+- name: generate hawkular-cassandra replication controllers
+  template:
+    src: hawkular_cassandra_rc.j2
+    dest: "{{ mktemp.stdout }}/templates/hawkular-cassandra-rc{{ item }}.yaml"
+  vars:
+    node: "{{ item }}"
+    master: "{{ (item == '1')|string|lower }}"
+  with_sequence: count={{ hawkular_cassandra_nodes }}
 - name: generate hawkular-cassandra persistent volume claims
   template:
     src: pvc.j2
@@ -64,20 +69,13 @@
   - metrics-hawkular-cassandra-svc.yaml
   - metrics-hawkular-cassandra-nodes-svc.yaml
   - metrics-cassandra-sa.yaml
-- name: create pvcs
+- name: create pvcs and rcs
   command: >
     {{ openshift.common.client_binary }} -n '{{ metrics_project }}'
     create -f {{ item }}
   with_fileglob:
   - "{{ mktemp.stdout }}/templates/hawkular-cassandra-pvc*.yaml"
-- name: process cassandra template
-  shell: >
-    {{ openshift.common.client_binary }} -n '{{ metrics_project }}'
-    process -f '{{ mktemp.stdout }}/templates/hawkular_cassandra_rc.yaml'
-    --value 'NODE={{ item }}'
-    {% if item == '1' %}--value MASTER=true{% endif %}
-    | oc create -f -
-  with_sequence: start=1 end={{ hawkular_cassandra_nodes }}
+  - "{{ mktemp.stdout }}/templates/hawkular-cassandra-rc*.yaml"
 - name: create the hawkular-metrics route
   command: >
     {{ openshift.common.client_binary }} -n '{{ metrics_project }}'
