@@ -55,27 +55,3 @@
       termination: reencrypt
       destination_ca_certificate: >
         {{ hawkular_metrics_secret.results[6].stdout|b64decode }}
-- name: create hawkular metrics objects
-  command: >
-    {{ openshift.common.client_binary }} -n '{{ metrics_project }}'
-    create -f '{{ mktemp.stdout }}/templates/{{ item }}'
-  with_items:
-  - hawkular_metrics_secrets.yaml
-  - hawkular_metrics_certificate.yaml
-  - hawkular_metrics_account.yaml
-  - cassandra_secrets.yaml
-  - cassandra_certificate.yaml
-  - metrics-hawkular-sa.yaml
-  - metrics-hawkular-metrics-svc.yaml
-  - hawkular_metrics_rc.yaml
-  - metrics-hawkular-cassandra-svc.yaml
-  - metrics-hawkular-cassandra-nodes-svc.yaml
-  - metrics-cassandra-sa.yaml
-  - hawkular-metrics-route.yaml
-- name: create pvcs and rcs
-  command: >
-    {{ openshift.common.client_binary }} -n '{{ metrics_project }}'
-    create -f {{ item }}
-  with_fileglob:
-  - "{{ mktemp.stdout }}/templates/hawkular-cassandra-pvc*.yaml"
-  - "{{ mktemp.stdout }}/templates/hawkular-cassandra-rc*.yaml"

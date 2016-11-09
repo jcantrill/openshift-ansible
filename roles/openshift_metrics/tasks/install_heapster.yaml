@@ -1,12 +1,3 @@
 ---
 - name: Generate heapster replication controller
   template: src=heapster.j2 dest={{mktemp.stdout}}/templates/metrics-heapster-rc.yaml
-- name: create heapster objects
-  command: >
-    {{ openshift.common.client_binary }} -n '{{ metrics_project }}'
-    create -f '{{ mktemp.stdout }}/templates/{{ item }}'
-  with_items:
-  - heapster_secrets.yaml
-  - metrics-heapster-sa.yaml
-  - metrics-heapster-svc.yaml
-  - metrics-heapster-rc.yaml

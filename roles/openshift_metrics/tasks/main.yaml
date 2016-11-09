@@ -16,3 +16,9 @@
     - hawkular
   loop_control:
     loop_var: include_file
+- name: create objects
+  command: >
+    {{ openshift.common.client_binary }} -n '{{ metrics_project }}'
+    create -f {{ item }}
+  with_fileglob:
+  - "{{ mktemp.stdout }}/templates/*.yaml"
