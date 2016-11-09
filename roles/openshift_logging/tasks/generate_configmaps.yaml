@@ -8,6 +8,11 @@
         src: elasticsearch.yml
         dest: "{{mktemp.stdout}}/elasticsearch.yml"
 
+    - lineinfile: 
+        dest: "{{mktemp.stdout}}/elasticsearch.yml"
+        regexp: '^openshift\.operations\.allow_cluster_reader(.)*$'
+        line: "\nopenshift.operations.allow_cluster_reader: {{es_ops_allow_cluster_reader | lower}}"
+
     - shell: >
         {{ openshift.common.client_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig create configmap logging-elasticsearch
         --from-file=logging.yml={{mktemp.stdout}}/elasticsearch-logging.yml --from-file=elasticsearch.yml={{mktemp.stdout}}/elasticsearch.yml -o yaml --dry-run
