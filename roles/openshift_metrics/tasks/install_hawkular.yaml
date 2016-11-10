@@ -55,20 +55,6 @@
       termination: reencrypt
       destination_ca_certificate: >
         {{ hawkular_metrics_secret.results[6].stdout|b64decode }}
-- name: test view permission for the hawkular service account
-  command: >
-    {{ openshift.common.client_binary }} get rolebindings
-    -o jsonpath='{.items[?(@.roleRef.name == "view")].userNames}'
-  register: view_rolebindings
-  changed_when: false
-- name: add the view role to the hawkular service account
-  command: >
-    '{{ openshift.common.admin_binary }}' policy
-    -n '{{ metrics_project }}' add-role-to-user view
-    --serviceaccount=hawkular
-  when: >
-    'system:serviceaccount:{{ metrics_project }}:hawkular'
-    not in view_rolebindings.stdout
 - name: create hawkular metrics objects
   command: >
     {{ openshift.common.client_binary }} -n '{{ metrics_project }}'

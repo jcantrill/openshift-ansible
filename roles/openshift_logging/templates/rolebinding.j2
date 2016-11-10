@@ -1,7 +1,13 @@
 apiVersion: v1
-kind: RoleBinding
+kind: {% if cluster is defined and cluster %}Cluster{% endif %}RoleBinding
 metadata:
   name: {{obj_name}}
+{% if labels is defined %}
+  labels:
+{% for k, v in labels.iteritems() %}
+    {{ k }}: {{ v }}
+{% endfor %}
+{% endif %}
 roleRef:
   kind: {{ roleRef.kind }}
   name: {{ roleRef.name }}
@@ -9,4 +15,7 @@ subjects:
 {% for sub in subjects %}
   - kind: {{ sub.kind }}
     name: {{ sub.name }}
+{% if 'namespace' in sub %}
+    namespace: {{ sub.namespace }}
+{% endif %}
 {% endfor %}

@@ -3,32 +3,12 @@
   command: >
     {{ openshift.common.client_binary }} -n '{{ metrics_project }}'
     delete --selector=metrics-infra
-    svc,replicationcontrollers,serviceaccounts,secrets,templates,routes,pvc
+    all,sa,secrets,templates,routes,pvc,rolebindings,clusterrolebindings
   register: delete_metrics
   changed_when: "delete_metrics.stdout != 'No resources found'"
-- name: test cluster-reader permissions for the heapster service account
+- name: remove rolebindings
   command: >
-    {{ openshift.common.client_binary }} get clusterrolebindings
-    -o jsonpath='{.items[?(@.roleRef.name == "cluster-reader")].userNames}'
-  register: clusterreader_rolebindings
-  changed_when: false
-- name: remove heapster cluster role binding
-  command: >
-    {{ openshift.common.admin_binary }} policy remove-cluster-role-from-user
-    cluster-reader 'system:serviceaccount:{{ metrics_project }}:heapster'
-  when: >
-    'system:serviceaccount:{{ metrics_project }}:heapster'
-    in clusterreader_rolebindings.stdout
-- name: test view permissions for the hawkular service account
-  command: >
-    {{ openshift.common.client_binary }} get rolebindings
-    -o jsonpath='{.items[?(@.roleRef.name == "view")].userNames}'
-  register: view_rolebindings
-  changed_when: false
-- name: remove hawkular role binding
-  command: >
-    {{ openshift.common.admin_binary }} policy remove-role-from-user
-    view hawkular
-  when: >
-    'system:serviceaccount:{{ metrics_project }}:hawkular'
-    in view_rolebindings.stdout
+    {{ openshift.common.client_binary }} -n {{ metrics_project }}
+    delete --ignore-not-found
+    rolebinding/hawkular-view
+    clusterrolebinding/heapster-cluster-reader

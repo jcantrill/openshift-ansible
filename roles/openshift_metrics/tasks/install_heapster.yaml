@@ -1,20 +1,6 @@
 ---
 - name: Generate heapster replication controller
   template: src=heapster.j2 dest={{mktemp.stdout}}/templates/metrics-heapster-rc.yaml
-- name: test cluster-reader permissions for the heapster service account
-  command: >
-    {{ openshift.common.client_binary }} get clusterrolebindings
-    -o jsonpath='{.items[?(@.roleRef.name == "cluster-reader")].userNames}'
-  register: clusterreader_rolebindings
-  changed_when: false
-- name: add the cluster-reader role to the heapster service account
-  command: >
-    '{{ openshift.common.admin_binary }}' policy
-    -n '{{ metrics_project }}' add-cluster-role-to-user
-    cluster-reader 'system:serviceaccount:{{ metrics_project }}:heapster'
-  when: >
-    'system:serviceaccount:{{ metrics_project }}:heapster'
-    not in clusterreader_rolebindings.stdout
 - name: create heapster objects
   command: >
     {{ openshift.common.client_binary }} -n '{{ metrics_project }}'

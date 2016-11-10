@@ -14,3 +14,4 @@
 - include: generate_serviceaccounts.yaml
 - include: generate_services.yaml
 - include: generate_certificates.yaml
+- include: generate_rolebindings.yaml
