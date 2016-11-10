@@ -17,6 +17,7 @@
     size: "{{es_pvc_size}}"
     access_modes:
       - ReadWriteOnce
+    pv_selector: "{{es_pv_selector}}"
   with_items:
     - "{{es_pvc_pool | default([])}}"
   loop_control:
@@ -35,6 +36,7 @@
     size: "{{es_pvc_size}}"
     access_modes:
       - ReadWriteOnce
+    pv_selector: "{{es_pv_selector}}"
   with_items:
     - "{{es_pvc_pool|default([])}}"
   loop_control:

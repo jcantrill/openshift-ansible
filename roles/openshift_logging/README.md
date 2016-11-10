@@ -44,6 +44,7 @@ a single host, it will create any missing certificates and API objects that the 
 
 - es_cluster_size: The number of ES cluster members. Defaults to '1'.
 - es_instance_ram: The amount of RAM that should be assigned to ES. Defaults to '1024M'.
+- es_pv_selector: A key/value map added to a PVC in order to select specific PVs.  Defaults to 'None'.
 - es_pvc_dynamic: Whether or not to add the dynamic PVC annotation for any generated PVCs. Defaults to 'False'.
 - es_pvc_size: The requested size for the ES PVCs, when not provided the role will not generate any PVCs. Defaults to '""'.
 - es_pvc_prefix: The prefix for the generated PVCs. Defaults to 'logging-es'.

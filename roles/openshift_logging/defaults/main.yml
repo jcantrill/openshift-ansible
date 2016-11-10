@@ -33,6 +33,7 @@ es_client_cert: /etc/fluent/keys/cert
 es_client_key: /etc/fluent/keys/key
 es_cluster_size: 1
 es_instance_ram: 1024M
+es_pv_selector: None
 es_pvc_dynamic: False
 es_pvc_size: ""
 es_pvc_prefix: logging-es
@@ -49,6 +50,7 @@ es_ops_client_cert: /etc/fluent/keys/cert
 es_ops_client_key: /etc/fluent/keys/key
 es_ops_cluster_size: 0
 es_ops_instance_ram: 1024M
+es_ops_pv_selector: None
 es_ops_pvc_dynamic: False
 es_ops_pvc_size: ""
 es_ops_pvc_prefix: logging-es-ops
