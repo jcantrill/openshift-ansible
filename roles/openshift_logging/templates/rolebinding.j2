@@ -9,7 +9,9 @@ metadata:
 {% endfor %}
 {% endif %}
 roleRef:
+{% if 'kind' in roleRef %}
   kind: {{ roleRef.kind }}
+{% endif %}
   name: {{ roleRef.name }}
 subjects:
 {% for sub in subjects %}

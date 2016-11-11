@@ -8,7 +8,6 @@
     labels:
       metrics-infra: hawkular
     roleRef:
-      kind: Role
       name: view
     subjects:
     - kind: ServiceAccount

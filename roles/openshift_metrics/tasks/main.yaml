@@ -19,6 +19,6 @@
 - name: create objects
   command: >
     {{ openshift.common.client_binary }} -n '{{ metrics_project }}'
-    create -f {{ item }}
+    apply -f {{ item }}
   with_fileglob:
   - "{{ mktemp.stdout }}/templates/*.yaml"
