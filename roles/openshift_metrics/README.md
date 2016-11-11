@@ -5,37 +5,65 @@ OpenShift Metrics Installation
 
 Requirements
 ------------
-It requires subdomain fqdn to be set.
-If persistence is enabled, then it also requires NFS.
+
+The following variables need to be set and will be validated:
+
+- `metrics_hostname`: hostname used on the hawkular metrics route.
+
+- `metrics_project`: project (i.e. namespace) where the components will be
+  deployed.
+
 
 Role Variables
 --------------
 
-From this role:
+For default values, see `defaults/main.yaml`.
 
-| Name                                            | Default value         |                                                             |
-|-------------------------------------------------|-----------------------|-------------------------------------------------------------|
-| openshift_hosted_metrics_deploy                 | `False`               | If metrics should be deployed                               |
-| openshift_hosted_metrics_public_url             | null                  | Hawkular metrics public url                                 |
-| openshift_hosted_metrics_storage_nfs_directory  | `/exports`            | Root export directory.                                      |
-| openshift_hosted_metrics_storage_volume_name    | `metrics`             | Metrics volume within openshift_hosted_metrics_volume_dir   |
-| openshift_hosted_metrics_storage_volume_size    | `10Gi`                | Metrics volume size                                         |
-| openshift_hosted_metrics_storage_nfs_options    | `*(rw,root_squash)`   | NFS options for configured exports.                         |
-| openshift_hosted_metrics_duration               | `7`                   | Metrics query duration                                      |
-| openshift_hosted_metrics_resolution             | `10s`                 | Metrics resolution                                          |
+- `image_prefix`: Specify prefix for metrics components; e.g for
+  "openshift/origin-metrics-deployer:v1.1", set prefix "openshift/origin-".
 
+- `image_version`: Specify version for metrics components; e.g. for
+  "openshift/origin-metrics-deployer:v1.1", set version "v1.1".
 
-From openshift_common:
+- `master_url`: Internal URL for the master, for authentication retrieval.
 
-| Name                                  | Default Value  |                                        |
-|---------------------------------------|----------------|----------------------------------------|
-| openshift_master_default_subdomain    | null           | Subdomain FQDN (Mandatory)             |
+- `hawkular_user_write_access`: If user accounts should be able to write
+  metrics.  Defaults to 'false' so that only Heapster can write metrics and not
+  individual users.  It is recommended to disable user write access, if enabled
+  any user will be able to write metrics to the system which can affect
+  performance and use Cassandra disk usage to unpredictably increase.
+
+- `hawkular_cassandra_nodes`: The number of Cassandra Nodes to deploy for the
+  initial cluster.
+
+- `hawkular_cassandra_storage_type`: Use `emptydir` for ephemeral storage (for
+  testing), `pv` to use persistent volumes (which need to be created before the
+  installation) or `dynamic` for dynamic persistent volumes.
+
+- `hawkular_cassandra_pv_prefix`: The name of persistent volume claims created
+  for cassandra will be this with a serial number appended to the end, starting
+  from 1.
+
+- `hawkular_cassandra_pv_size`: The persistent volume size for each of the
+  Cassandra  nodes.
+
+- `heapster_standalone`: Deploy only heapster, without the Hawkular Metrics and
+  Cassandra components.
+
+- `heapster_allowed_users`: A comma-separated list of CN to accept.  By
+  default, this is set to allow the OpenShift service proxy to connect.  If you
+  override this, make sure to add `system:master-proxy` to the list in order to
+  allow horizontal pod autoscaling to function properly.
+
+- `metrics_duration`: How many days metrics should be stored for.
+
+- `metrics_resolution`: How often metrics should be gathered.
 
 
 Dependencies
 ------------
 openshift_facts
-openshift_examples
+
 
 Example Playbook
 ----------------
