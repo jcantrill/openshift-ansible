@@ -22,12 +22,15 @@
     - fluentd
   loop_control:
     loop_var: install_component
+        
+- name: Register API objects from generated templates
+  shell: ls -d -1 {{mktemp.stdout}}/templates/* | sort
+  register: logging_objects
 
 - name: Creating API objects from generated templates
   command: >
     {{ openshift.common.client_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig apply -f {{file}} -n {{logging_namespace}}
-  with_fileglob:
-    - "{{mktemp.stdout}}/templates/*.yaml"
+  with_items: "{{logging_objects.stdout_lines}}"
   loop_control:
     loop_var: file
   when: not ansible_check_mode

@@ -16,7 +16,7 @@
   check_mode: no
 
 - name: Generate ClusterRole for cluster-reader
-  template: src=clusterrole.j2 dest={{mktemp.stdout}}/templates/logging-{{obj_name}}-clusterrole.yaml
+  template: src=clusterrole.j2 dest={{mktemp.stdout}}/templates/logging-10-{{obj_name}}-clusterrole.yaml
   vars:
     obj_name: rolebinding-reader
     rules:
