@@ -18,3 +18,8 @@ hawkular_persistence: "{% if openshift.hosted.metrics.storage.kind != None %}tru
 hawkular_type: "{{ 'origin' if deployment_type == 'origin' else 'enterprise' }}"
 
 metrics_upgrade: openshift.hosted.metrics.upgrade | default(False)
+
+hawkular_cassandra_storage_types:
+- emptydir
+- pv
+- dynamic

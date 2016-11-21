@@ -1,6 +1,6 @@
 ---
 # TODO idempotency?
-# TODO support providing custom certificates, allowed users
+# TODO support providing custom certificates
 - name: create certificate output directory
   file:
     path: "{{ mktemp.stdout }}/certs"
@@ -25,25 +25,23 @@
 # TODO maybe there's an easier way to get the service accounts' ca crt?
 - name: get heapster service account secrets
   shell: >
-    {{ openshift.common.client_binary }} -n '{{ project }}'
+    {{ openshift.common.client_binary }} -n '{{ metrics_project }}'
     get serviceaccount/default
     --template '{{ '{{range .secrets}}{{println .name}}{{end}}' }}'
     | grep ^default-token-
   register: sa_secret
 - name: get heapster service account ca
   command: >
-    {{ openshift.common.client_binary }} -n '{{ project }}'
+    {{ openshift.common.client_binary }} -n '{{ metrics_project }}'
     get 'secret/{{ sa_secret.stdout }}'
     --template '{{ '{{index .data "ca.crt"}}' }}'
   register: sa_secret
 - name: read files for the heapster secret
-  command: base64 --wrap 0 "{{ mktemp.stdout }}/certs/heapster.{{ file }}"
+  command: base64 --wrap 0 "{{ mktemp.stdout }}/certs/heapster.{{ item }}"
   register: heapster_secret
   with_items:
   - cert
   - key
-  loop_control:
-    loop_var: file
 - name: generate heapster secret template
   template:
     src: secret.j2
@@ -56,7 +54,7 @@
       heapster.cert: "{{ heapster_secret.results[0].stdout }}"
       heapster.key: "{{ heapster_secret.results[1].stdout }}"
       heapster.client-ca: "{{ sa_secret.stdout }}"
-      heapster.allowed-users: "{{ 'system:master-proxy'|b64encode }}"
+      heapster.allowed-users: "{{ heapster_allowed_users|b64encode }}"
 - name: generate hawkular-metrics certificates
   include: setup_certificate.yaml
   vars:
@@ -119,14 +117,24 @@
 - name: generate password for htpasswd file for hawkular metrics
   shell: cat /dev/urandom | tr -dc _A-Z-a-z-0-9 | head -c15
   register: hawkular_metrics_password
+- name: generate password for hawkular metrics jgroups
+  shell: cat /dev/urandom | tr -dc _A-Z-a-z-0-9 | head -c15
+  register: hawkular_metrics_jgroups_password
 - name: generate htpasswd file for hawkular metrics
   shell: >
     htpasswd -cb
     "{{ mktemp.stdout|quote }}/certs/hawkular-metrics.htpasswd" hawkular
     '{{ hawkular_metrics_password.stdout }}'
+- name: generate the jgroups keystore
+  command: >
+    keytool -genseckey -alias hawkular
+    -keypass {{ hawkular_metrics_jgroups_password.stdout }}
+    -storepass {{ hawkular_metrics_jgroups_password.stdout }}
+    -keyalg Blowfish -keysize 56 -storetype JCEKS
+    -keystore {{ mktemp.stdout }}/certs/hawkular-jgroups.keystore
 - name: read files for the hawkular-metrics secret
   command: >
-    base64 --wrap 0 "{{ mktemp.stdout }}/certs/{{ file }}"
+    base64 --wrap 0 "{{ mktemp.stdout }}/certs/{{ item }}"
   register: hawkular_metrics_secret
   with_items:
   - hawkular-metrics.keystore
@@ -142,8 +150,7 @@
   - hawkular-cassandra-truststore.pwd
   - hawkular-cassandra.pem
   - hawkular-cassandra.cert
-  loop_control:
-    loop_var: file
+  - hawkular-jgroups.keystore
 - name: generate hawkular-metrics-secrets secret template
   template:
     src: secret.j2
@@ -164,6 +171,11 @@
       hawkular-metrics.keystore.alias: "{{ 'hawkular-metrics'|b64encode }}"
       hawkular-metrics.htpasswd.file: >
         "{{ hawkular_metrics_secret.results[4].stdout }}"
+      hawkular-metrics.jgroups.keystore.password: >
+        "{{ hawkular_metrics_jgroups_password.stdout|b64encode }}"
+      hawkular-metrics.jgroups.keystore: >
+        "{{ hawkular_metrics_secret.results[13].stdout }}"
+      hawkular-metrics.jgroups.alias: "{{ 'hawkular'|b64encode }}"
 - name: generate hawkular-metrics-certificate secret template
   template:
     src: secret.j2
