@@ -17,7 +17,7 @@ The following variables need to be set and will be validated:
 Role Variables
 --------------
 
-For default values, see `defaults/main.yaml`.
+For default values, see [`defaults/main.yaml`](defaults/main.yaml).
 
 - `image_prefix`: Specify prefix for metrics components; e.g for
   "openshift/origin-metrics-deployer:v1.1", set prefix "openshift/origin-".
