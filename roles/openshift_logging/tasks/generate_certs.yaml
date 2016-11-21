@@ -41,17 +41,26 @@
     - not signing_conf_file.stat.exists
 
 - include: procure_server_certs.yaml
-  vars:
+  loop_control:
+    loop_var: cert_info
+  with_items:
     - procure_component: kibana
-
-- include: procure_server_certs.yaml
-  vars:
     - procure_component: kibana-ops
-
-- include: procure_server_certs.yaml
-  vars:
     - procure_component: kibana-internal
-    - hostnames: "kibana, kibana-ops, {{kibana_hostname}}, {{kibana_ops_hostname}}"
+      hostnames: "kibana, kibana-ops, {{kibana_hostname}}, {{kibana_ops_hostname}}"
+
+# - include: procure_server_certs.yaml
+#   vars:
+#     - procure_component: kibana
+
+# - include: procure_server_certs.yaml
+#   vars:
+#     - procure_component: kibana-ops
+
+# - include: procure_server_certs.yaml
+#   vars:
+#     - procure_component: kibana-internal
+#     - hostnames: "kibana, kibana-ops, {{kibana_hostname}}, {{kibana_ops_hostname}}"
 
 - name: Copy proxy TLS configuration file
   copy: src=server-tls.json dest={{generated_certs_dir}}/server-tls.json
