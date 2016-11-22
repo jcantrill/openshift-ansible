@@ -48,3 +48,5 @@
 - include: generate_clusterrolebindings.yaml
 
 - include: generate_serviceaccounts.yaml
+
+- include: generate_routes.yaml
