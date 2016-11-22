@@ -1,6 +1,6 @@
 ---
 - name: Generate ClusterRoleBindings
-  template: src=clusterrolebinding.j2 dest={{mktemp.stdout}}/templates/logging-{{obj_name}}-clusterrolebinding.yaml
+  template: src=clusterrolebinding.j2 dest={{mktemp.stdout}}/templates/logging-15-{{obj_name}}-clusterrolebinding.yaml
   vars:
     acct_name: aggregated-logging-elasticsearch
     obj_name: rolebinding-reader
