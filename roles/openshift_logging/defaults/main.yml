@@ -2,8 +2,8 @@
 image_prefix: docker.io/openshift/origin-
 image_version: latest
 logging_use_ops: False
-master_url: https://kubernetes.default.svc.cluster.local
-public_master_url: https://localhost:8443
+master_url: "https://kubernetes.default.svc.{{ openshift.common.dns_domain }}"
+public_master_url: "https://{{openshift.common.public_hostname}}:8443"
 logging_namespace: logging
 etcd_generated_certs_dir: /etc/etcd/generated_certs
 install_logging: True

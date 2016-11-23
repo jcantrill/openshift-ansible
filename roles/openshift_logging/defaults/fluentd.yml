@@ -1,3 +1,0 @@
----
-fluentd_nodeselector: logging-infra-fluentd=true
-fluentd_cpu_limit: 100m

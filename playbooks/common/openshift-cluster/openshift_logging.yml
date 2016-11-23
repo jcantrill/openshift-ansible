@@ -1,4 +1,4 @@
 - name: OpenShift Aggregated Logging
-  hosts: all
-  roles: 
+  hosts: oo_first_master
+  roles:
   - openshift_logging
