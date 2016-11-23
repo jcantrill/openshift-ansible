@@ -82,7 +82,7 @@ spec:
         - name: "OPS_CA"
           value: "{{ops_ca}}"
         - name: "ES_COPY"
-          value: "{{fluentd_es_copy}}"
+          value: "{{fluentd_es_copy|lower}}"
         - name: "ES_COPY_HOST"
           value: "{{es_copy_host | default('')}}"
         - name: "ES_COPY_PORT"
@@ -116,11 +116,11 @@ spec:
         - name: "OPS_COPY_PASSWORD"
           value: "{{ops_copy_password | default('')}}"
         - name: "USE_JOURNAL"
-          value: "{{fluentd_use_journal}}"
+          value: "{{fluentd_use_journal|lower}}"
         - name: "JOURNAL_SOURCE"
           value: "{{fluentd_journal_source | default('')}}"
         - name: "JOURNAL_READ_FROM_HEAD"
-          value: "{{journal_read_from_head}}"
+          value: "{{journal_read_from_head|lower}}"
       volumes:
       - name: runlogjournal
         hostPath:
