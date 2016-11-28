@@ -3,25 +3,25 @@
 # TODO support providing custom certificates
 - name: create certificate output directory
   file:
-    path: "{{ mktemp.stdout }}/certs"
+    path: "{{ openshift_metrics_certs_dir }}"
     state: directory
     mode: 0700
 - name: generate ca certificate chain
   shell: >
     {{ openshift.common.admin_binary }} ca create-signer-cert
-    --key='{{ mktemp.stdout }}/certs/ca.key'
-    --cert='{{ mktemp.stdout }}/certs/ca.crt'
-    --serial='{{ mktemp.stdout }}/certs/ca.serial.txt'
+    --key='{{ openshift_metrics_certs_dir }}/ca.key'
+    --cert='{{ openshift_metrics_certs_dir }}/ca.crt'
+    --serial='{{ openshift_metrics_certs_dir }}/ca.serial.txt'
     --name="metrics-signer@$(date +%s)"
 - name: generate heapster key/cert
   command: >
     {{ openshift.common.admin_binary }} ca create-server-cert
-    --key='{{ mktemp.stdout }}/certs/heapster.key'
-    --cert='{{ mktemp.stdout }}/certs/heapster.cert'
+    --key='{{ openshift_metrics_certs_dir }}/heapster.key'
+    --cert='{{ openshift_metrics_certs_dir }}/heapster.cert'
     --hostnames=heapster
-    --signer-cert='{{ mktemp.stdout }}/certs/ca.crt'
-    --signer-key='{{ mktemp.stdout }}/certs/ca.key'
-    --signer-serial='{{ mktemp.stdout }}/certs/ca.serial.txt'
+    --signer-cert='{{ openshift_metrics_certs_dir }}/ca.crt'
+    --signer-key='{{ openshift_metrics_certs_dir }}/ca.key'
+    --signer-serial='{{ openshift_metrics_certs_dir }}/ca.serial.txt'
 # TODO maybe there's an easier way to get the service accounts' ca crt?
 - name: get heapster service account secrets
   shell: >
@@ -37,7 +37,8 @@
     --template '{{ '{{index .data "ca.crt"}}' }}'
   register: sa_secret
 - name: read files for the heapster secret
-  command: base64 --wrap 0 "{{ mktemp.stdout }}/certs/heapster.{{ item }}"
+  command: >
+    base64 --wrap 0 '{{ openshift_metrics_certs_dir }}/heapster.{{ item }}'
   register: heapster_secret
   with_items:
   - cert
@@ -70,34 +71,34 @@
   shell: >
     keytool -noprompt -import -v -trustcacerts
     -alias hawkular-metrics
-    -file '{{ mktemp.stdout|quote }}/certs/hawkular-metrics.cert'
-    -keystore '{{ mktemp.stdout|quote }}/certs/hawkular-cassandra.truststore'
-    -storepass
-    "$(< "{{ mktemp.stdout|quote }}/certs/hawkular-cassandra-truststore.pwd")"
+    -file '{{ openshift_metrics_certs_dir }}/hawkular-metrics.cert'
+    -keystore '{{ openshift_metrics_certs_dir }}/hawkular-cassandra.truststore'
+    -storepass '$(< \
+    '{{ openshift_metrics_certs_dir }}/hawkular-cassandra-truststore.pwd')'
 - name: import the hawkular cassandra cert into the hawkular metrics truststore
   shell: >
     keytool -noprompt -import -v -trustcacerts
     -alias hawkular-cassandra
-    -file '{{ mktemp.stdout }}/certs/hawkular-cassandra.cert'
-    -keystore '{{ mktemp.stdout }}/certs/hawkular-metrics.truststore'
-    -storepass
-    "$(< "{{ mktemp.stdout|quote }}/certs/hawkular-metrics-truststore.pwd")"
+    -file '{{ openshift_metrics_certs_dir }}/hawkular-cassandra.cert'
+    -keystore '{{ openshift_metrics_certs_dir }}/hawkular-metrics.truststore'
+    -storepass '$(< \
+    '{{ openshift_metrics_certs_dir }}/hawkular-metrics-truststore.pwd')'
 - name: import the hawkular cassandra cert into the cassandra truststore
   shell: >
     keytool -noprompt -import -v -trustcacerts
     -alias hawkular-cassandra
-    -file '{{ mktemp.stdout }}/certs/hawkular-cassandra.cert'
-    -keystore '{{ mktemp.stdout }}/certs/hawkular-cassandra.truststore'
-    -storepass
-    "$(< "{{ mktemp.stdout|quote }}/certs/hawkular-cassandra-truststore.pwd")"
+    -file '{{ openshift_metrics_certs_dir }}/hawkular-cassandra.cert'
+    -keystore '{{ openshift_metrics_certs_dir }}/hawkular-cassandra.truststore'
+    -storepass '$(< \
+    '{{ openshift_metrics_certs_dir }}/hawkular-cassandra-truststore.pwd')'
 - name: import the ca certificate into the cassandra truststore
   shell: >
     keytool -noprompt -import -v -trustcacerts
     -alias '{{ item }}'
-    -file '{{ mktemp.stdout }}/certs/ca.crt'
-    -keystore '{{ mktemp.stdout }}/certs/hawkular-cassandra.truststore'
-    -storepass
-    "$(< "{{ mktemp.stdout|quote }}/certs/hawkular-cassandra-truststore.pwd")"
+    -file '{{ openshift_metrics_certs_dir }}/ca.crt'
+    -keystore '{{ openshift_metrics_certs_dir }}/hawkular-cassandra.truststore'
+    -storepass '$(< \
+    '{{ openshift_metrics_certs_dir }}/hawkular-cassandra-truststore.pwd')'
   with_items:
   - ca
   - metricca
@@ -106,10 +107,10 @@
   shell: >
     keytool -noprompt -import -v -trustcacerts
     -alias '{{ item }}'
-    -file '{{ mktemp.stdout }}/certs/ca.crt'
-    -keystore '{{ mktemp.stdout }}/certs/hawkular-metrics.truststore'
-    -storepass
-    "$(< "{{ mktemp.stdout|quote }}/certs/hawkular-metrics-truststore.pwd")"
+    -file '{{ openshift_metrics_certs_dir }}/ca.crt'
+    -keystore '{{ openshift_metrics_certs_dir }}/hawkular-metrics.truststore'
+    -storepass '$(< \
+    '{{ openshift_metrics_certs_dir }}/hawkular-metrics-truststore.pwd')'
   with_items:
   - ca
   - metricca
@@ -123,7 +124,7 @@
 - name: generate htpasswd file for hawkular metrics
   shell: >
     htpasswd -cb
-    "{{ mktemp.stdout|quote }}/certs/hawkular-metrics.htpasswd" hawkular
+    '{{ openshift_metrics_certs_dir }}/hawkular-metrics.htpasswd' hawkular
     '{{ hawkular_metrics_password.stdout }}'
 - name: generate the jgroups keystore
   command: >
@@ -131,10 +132,9 @@
     -keypass {{ hawkular_metrics_jgroups_password.stdout }}
     -storepass {{ hawkular_metrics_jgroups_password.stdout }}
     -keyalg Blowfish -keysize 56 -storetype JCEKS
-    -keystore {{ mktemp.stdout }}/certs/hawkular-jgroups.keystore
+    -keystore '{{ openshift_metrics_certs_dir }}/hawkular-jgroups.keystore'
 - name: read files for the hawkular-metrics secret
-  command: >
-    base64 --wrap 0 "{{ mktemp.stdout }}/certs/{{ item }}"
+  command: base64 --wrap 0 '{{ openshift_metrics_certs_dir }}/{{ item }}'
   register: hawkular_metrics_secret
   with_items:
   - hawkular-metrics.keystore
