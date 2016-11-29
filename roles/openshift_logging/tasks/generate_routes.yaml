@@ -17,4 +17,4 @@
     - {name: logging-kibana-ops, host: "{{kibana_ops_hostname}}"}
   loop_control:
     loop_var: route_info
-
+  when: (route_info.name == 'logging-kibana-ops' and logging_use_ops) or route_info.name == 'logging-kibana'
