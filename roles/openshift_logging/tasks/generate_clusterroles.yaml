@@ -1,20 +1,4 @@
 ---
-- name: Generate ClusterRole for fluentd
-  template: src=clusterrole.j2 dest={{mktemp.stdout}}/templates/logging-{{obj_name}}-clusterrole.yaml
-  vars:
-    obj_name: daemonset-admin
-    rules:
-      - resources: [daemonsets]
-        api_groups: [extensions]
-        verbs:
-          - create
-          - get
-          - list
-          - watch
-          - delete
-          - update
-  check_mode: no
-
 - name: Generate ClusterRole for cluster-reader
   template: src=clusterrole.j2 dest={{mktemp.stdout}}/templates/logging-10-{{obj_name}}-clusterrole.yaml
   vars:
