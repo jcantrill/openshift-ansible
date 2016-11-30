@@ -21,6 +21,7 @@ kibana_proxy_debug: false
 
 fluentd_nodeselector: '"logging-infra-fluentd": "true"'
 fluentd_cpu_limit: 100m
+fluentd_memory_limit: 512Mi
 fluentd_es_copy: false
 fluentd_use_journal: false
 journal_read_from_head: false

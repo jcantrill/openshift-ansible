@@ -36,6 +36,7 @@ to the list of persisted [node labels](https://docs.openshift.org/latest/install
 
 - fluentd_nodeselector: The node selector that the Fluentd daemonset uses to determine where to deploy to. Defaults to '"logging-infra-fluentd": "true"'.
 - fluentd_cpu_limit: The CPU limit for Fluentd pods. Defaults to '100m'.
+- fluentd_memory_limit: The memory limit for Fluentd pods. Defaults to '512Mi'.
 - fluentd_es_copy: Whether or not to use the ES_COPY feature for Fluentd (DEPRECATED). Defaults to 'False'.
 - fluentd_use_journal: Whether or not Fluentd should read log entries from Journal. Defaults to 'False'. NOTE: Fluentd will attempt to detect whether or not Docker is using the journald log driver and may overwrite this value.
 - journal_read_from_head: Whether or not Fluentd will try to read from the head of Journal when first starting up, using this may cause a delay in ES receiving current log records. Defaults to 'False'.
