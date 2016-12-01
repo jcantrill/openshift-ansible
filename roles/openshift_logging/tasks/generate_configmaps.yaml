@@ -3,15 +3,28 @@
     - copy:
         src: elasticsearch-logging.yml
         dest: "{{mktemp.stdout}}/elasticsearch-logging.yml"
+      when: es_logging_contents is undefined
 
     - copy:
         src: elasticsearch.yml
         dest: "{{mktemp.stdout}}/elasticsearch.yml"
+      when: es_config_contents is undefined
 
-    - lineinfile: 
+    - lineinfile:
         dest: "{{mktemp.stdout}}/elasticsearch.yml"
         regexp: '^openshift\.operations\.allow_cluster_reader(.)*$'
         line: "\nopenshift.operations.allow_cluster_reader: {{es_ops_allow_cluster_reader | lower}}"
+      when: es_config_contents is undefined
+
+    - copy:
+        content: "{{es_logging_contents}}"
+        dest: "{{mktemp.stdout}}/elasticsearch-logging.yml"
+      when: es_logging_contents is defined
+
+    - copy:
+        content: "{{es_config_contents}}"
+        dest: "{{mktemp.stdout}}/elasticsearch.yml"
+      when: es_config_contents is defined
 
     - shell: >
         {{ openshift.common.client_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig create configmap logging-elasticsearch
@@ -28,6 +41,12 @@
     - copy:
         src: curator.yml
         dest: "{{mktemp.stdout}}/curator.yml"
+      when: curator_config_contents is undefined
+
+    - copy:
+        content: "{{curator_config_contents}}"
+        dest: "{{mktemp.stdout}}/curator.yml"
+      when: curator_config_contenets is defined
 
     - shell: >
         {{ openshift.common.client_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig create configmap logging-curator
@@ -44,14 +63,32 @@
     - copy:
         src: fluent.conf
         dest: "{{mktemp.stdout}}/fluent.conf"
+      when: fluentd_config_contents is undefined
 
     - copy:
         src: fluentd-throttle-config.yaml
         dest: "{{mktemp.stdout}}/fluentd-throttle-config.yaml"
+      when: fluentd_throttle_contents is undefined
 
     - copy:
         src: secure-forward.conf
         dest: "{{mktemp.stdout}}/secure-forward.conf"
+      when: fluentd_securefoward_contents is undefined
+
+    - copy:
+        content: "{{fluentd_config_contents}}"
+        dest: "{{mktemp.stdout}}/fluent.conf"
+      when: fluentd_config_contents is defined
+
+    - copy:
+        content: "{{fluentd_throttle_contents}}"
+        dest: "{{mktemp.stdout}}/fluentd-throttle-config.yaml"
+      when: fluentd_throttle_contents is defined
+
+    - copy:
+        content: "{{fluentd_secureforward_contents}}"
+        dest: "{{mktemp.stdout}}/secure-forward.conf"
+      when: fluentd_secureforward_contents is defined
 
     - shell: >
         {{ openshift.common.client_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig create configmap logging-fluentd
