@@ -5,7 +5,9 @@
     component: curator
     logging_component: curator
     deploy_name: "logging-{{component}}"
-    image: "{{image_prefix}}logging-curator:{{image_version}}"
+    image: "{{openshift_logging_image_prefix}}logging-curator:{{openshift_logging_image_version}}"
+    es_host: logging-es
+    es_port: "{{openshift_logging_es_port}}"
   check_mode: no
 
 - name: Generate OPS curator deploymentconfig
@@ -14,7 +16,8 @@
     component: curator-ops
     logging_component: curator
     deploy_name: "logging-{{component}}"
-    image: "{{image_prefix}}logging-curator:{{image_version}}"
+    image: "{{openshift_logging_image_prefix}}logging-curator:{{openshift_logging_image_version}}"
     es_host: logging-es-ops
-  when: logging_use_ops
+    es_port: "{{openshift_logging_es_ops_port}}"
+  when: openshift_logging_use_ops
   check_mode: no

@@ -6,8 +6,8 @@ metadata:
     logging-infra: support
 secret: {{secret}}
 redirectURIs:
-- https://{{kibana_hostname}}
-- https://{{kibana_ops_hostname}}
+- https://{{openshift_logging_kibana_hostname}}
+- https://{{openshift_logging_kibana_ops_hostname}}
 scopeRestrictions:
 - literals:
   - user:info

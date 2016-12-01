@@ -76,7 +76,7 @@ spec:
              value: "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
             -
              name: "OAP_DEBUG"
-             value: "{{kibana_proxy_debug}}"
+             value: "{{openshift_logging_kibana_proxy_debug}}"
           volumeMounts:
             - name: kibana-proxy
               mountPath: /secret

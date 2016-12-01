@@ -13,7 +13,7 @@
     - lineinfile:
         dest: "{{mktemp.stdout}}/elasticsearch.yml"
         regexp: '^openshift\.operations\.allow_cluster_reader(.)*$'
-        line: "\nopenshift.operations.allow_cluster_reader: {{es_ops_allow_cluster_reader | lower}}"
+        line: "\nopenshift.operations.allow_cluster_reader: {{openshift_logging_es_ops_allow_cluster_reader | lower}}"
       when: es_config_contents is undefined
 
     - copy:

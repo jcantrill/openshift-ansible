@@ -286,12 +286,12 @@ def main():
         argument_spec=dict(
             admin_kubeconfig = {"required": True, "type": "str"},
             oc_bin = {"required": True, "type": "str"},
-            logging_namespace = {"required": True, "type": "str"}
+            openshift_logging_namespace = {"required": True, "type": "str"}
         ),
         supports_check_mode = False
     )
     try:
-        cmd = OpenshiftLoggingFacts(module, module.params['oc_bin'], module.params['admin_kubeconfig'],module.params['logging_namespace'])
+        cmd = OpenshiftLoggingFacts(module, module.params['oc_bin'], module.params['admin_kubeconfig'],module.params['openshift_logging_namespace'])
         module.exit_json(
                 ansible_facts = {"openshift_logging_facts": cmd.do() }
         )
