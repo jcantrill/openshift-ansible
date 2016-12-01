@@ -9,16 +9,19 @@ spec:
     spec:
       containers:
       - name: jks-cert-gen
-        image: {{image_prefix}}logging-elasticsearch:{{image_version}}
+        image: {{image_prefix}}logging-deployer:{{image_version}}
         command: ["sh",  "generate-jks.sh"]
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /opt/app-root/src
+        - mountPath: /opt/deploy
           name: certmount
+        env:
+        - name: PROJECT
+          value: {{logging_namespace}}
       restartPolicy: Never
       serviceAccount: aggregated-logging-fluentd
       volumes:
       - hostPath:
-          path: {{host_dir}}
+          path: "{{etcd_generated_certs_dir}}/logging"
         name: certmount

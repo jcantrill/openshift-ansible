@@ -116,6 +116,22 @@
 #- shell: index=2; certs=""; for cert in $(echo logging-es{,-ops}{,-cluster}{,.logging.svc.cluster.local}); do certs=$certs,DNS.$index=$cert; index=$(($index+1)); done; echo $certs
 #  register: logging_es_certs
 
+# -- this is used for the job -- incomplete
+#- name: Copy jks script
+#  copy:
+#    src: generate-jks.sh
+#    dest: "{{etcd_generated_certs_dir}}/logging"
+
+#- name: Generate JKS chains
+#  template:
+#    src: job.j2
+#    dest: "{{mktemp.stdout}}/jks_job.yaml"
+
+#- name: kick off job
+#  shell: >
+#    {{ openshift.common.client_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig create -f {{mktemp.stdout}}/jks_job.yaml -n {{logging_namespace}}
+# -- this is used for the job -- incomplete
+
 - name: Generate PKCS12 chains
 #  include: generate_pkcs12.yaml component='system.admin'
   include: generate_jks_chain.yaml component='system.admin'
