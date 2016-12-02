@@ -1,27 +1,26 @@
-apiVersion: batch/v1
-kind: Job
+apiVersion: v1
+kind: Pod
 metadata:
-  name: jks-cert-gen
+  labels:
+    logging-infra: support
+  generateName: jks-cert-gen-
 spec:
-  template:
-    metadata:
-      name: jks-cert-gen
-    spec:
-      containers:
-      - name: jks-cert-gen
-        image: {{image_prefix}}logging-deployer:{{image_version}}
-        command: ["sh",  "generate-jks.sh"]
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /opt/deploy
-          name: certmount
-        env:
-        - name: PROJECT
-          value: {{logging_namespace}}
-      restartPolicy: Never
-      serviceAccount: aggregated-logging-fluentd
-      volumes:
-      - hostPath:
-          path: "{{etcd_generated_certs_dir}}/logging"
-        name: certmount
+  containers:
+  - name: jks-cert-gen
+    image: {{image_prefix}}logging-deployer:{{image_version}}
+    imagePullPolicy: Always
+    command: ["sh",  "generate-jks.sh"]
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - mountPath: /opt/deploy
+      name: certmount
+    env:
+    - name: PROJECT
+      value: {{logging_namespace}}
+  restartPolicy: Never
+  serviceAccount: aggregated-logging-fluentd
+  volumes:
+  - hostPath:
+      path: "{{etcd_generated_certs_dir}}/logging"
+    name: certmount

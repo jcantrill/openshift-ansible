@@ -1,58 +1,23 @@
 #! /bin/sh
 set -ex
 
-function generate_JKS_chain() {
+function importPKCS() {
   dir=${SCRATCH_DIR:-_output}
-  ADD_OID=$1
-  NODE_NAME=$2
-  CERT_NAMES=${3:-$NODE_NAME}
+  NODE_NAME=$1
   ks_pass=${KS_PASS:-kspass}
   ts_pass=${TS_PASS:-tspass}
   rm -rf $NODE_NAME
 
-  extension_names=""
-  for name in ${CERT_NAMES//,/ }; do
-	extension_names="${extension_names},dns:${name}"
-  done
-
-  if [ "$ADD_OID" = true ]; then
-    extension_names="${extension_names},oid:1.2.3.4.5.5"
-  fi
-
-  echo Generating keystore and certificate for node $NODE_NAME
-
-  keytool -genkey \
-        -alias     $NODE_NAME \
-        -keystore  $dir/keystore.jks \
-        -keypass   $ks_pass \
-        -storepass $ks_pass \
-        -keyalg    RSA \
-        -keysize   2048 \
-        -validity  712 \
-        -dname "CN=$NODE_NAME, OU=OpenShift, O=Logging" \
-        -ext san=dns:localhost,ip:127.0.0.1"${extension_names}"
-
-  echo Generating certificate signing request for node $NODE_NAME
-
-  keytool -certreq \
-        -alias      $NODE_NAME \
-        -keystore   $dir/keystore.jks \
-        -storepass  $ks_pass \
-        -file       $dir/$NODE_NAME.csr \
-        -keyalg     rsa \
-        -dname "CN=$NODE_NAME, OU=OpenShift, O=Logging" \
-        -ext san=dns:localhost,ip:127.0.0.1"${extension_names}"
-
-  echo Sign certificate request with CA
-
-  openssl ca \
-    -in $dir/$NODE_NAME.csr \
-    -notext \
-    -out $dir/$NODE_NAME.crt \
-    -config $dir/signing.conf \
-    -extensions v3_req \
-    -batch \
-	-extensions server_ext
+  keytool \
+    -importkeystore \
+    -srckeystore $NODE_NAME.pkcs12 \
+    -srcstoretype PKCS12 \
+    -srcstorepass pass \
+    -deststorepass $ks_pass \
+    -destkeypass $ks_pass \
+    -destkeystore $dir/keystore.jks \
+    -alias 1 \
+    -destalias $NODE_NAME
 
   echo "Import back to keystore (including CA chain)"
 
@@ -63,13 +28,10 @@ function generate_JKS_chain() {
     -storepass $ks_pass  \
     -noprompt -alias sig-ca
 
-  keytool \
-    -import \
-    -file $dir/$NODE_NAME.crt \
-    -keystore $dir/keystore.jks \
-    -storepass $ks_pass \
-    -noprompt \
-    -alias $NODE_NAME
+  echo All done for $NODE_NAME
+}
+
+function createTruststore() {
 
   echo "Import CA to truststore for validating client certs"
 
@@ -79,67 +41,6 @@ function generate_JKS_chain() {
     -keystore $dir/truststore.jks   \
     -storepass $ts_pass  \
     -noprompt -alias sig-ca
-
-  echo All done for $NODE_NAME
-}
-
-function generate_JKS_client_cert() {
-  NODE_NAME="$1"
-  ks_pass=${KS_PASS:-kspass}
-  ts_pass=${TS_PASS:-tspass}
-  dir=${SCRATCH_DIR:-_output}  # for writing files to bundle into secrets
-
-  echo Generating keystore and certificate for node ${NODE_NAME}
-
-  keytool -genkey \
-        -alias     $NODE_NAME \
-        -keystore  $dir/$NODE_NAME.jks \
-        -keyalg    RSA \
-        -keysize   2048 \
-        -validity  712 \
-        -keypass $ks_pass \
-        -storepass $ks_pass \
-        -dname "CN=$NODE_NAME, OU=OpenShift, O=Logging"
-
-  echo Generating certificate signing request for node $NODE_NAME
-
-  keytool -certreq \
-          -alias      $NODE_NAME \
-          -keystore   $dir/$NODE_NAME.jks \
-          -file       $dir/$NODE_NAME.csr \
-          -keyalg     rsa \
-          -keypass $ks_pass \
-          -storepass $ks_pass \
-          -dname "CN=$NODE_NAME, OU=OpenShift, O=Logging"
-
-  echo Sign certificate request with CA
-  openssl ca \
-    -in "$dir/$NODE_NAME.csr" \
-    -notext \
-    -out "$dir/$NODE_NAME.crt" \
-    -config $dir/signing.conf \
-    -extensions v3_req \
-    -batch \
-	-extensions server_ext
-
-  echo "Import back to keystore (including CA chain)"
-
-  keytool  \
-    -import \
-    -file $dir/ca.crt  \
-    -keystore $dir/$NODE_NAME.jks   \
-    -storepass $ks_pass  \
-    -noprompt -alias sig-ca
-
-  keytool \
-    -import \
-    -file $dir/$NODE_NAME.crt \
-    -keystore $dir/$NODE_NAME.jks \
-    -storepass $ks_pass \
-    -noprompt \
-    -alias $NODE_NAME
-
-  echo All done for $NODE_NAME
 }
 
 dir="/opt/deploy/"
@@ -147,13 +48,24 @@ SCRATCH_DIR=$dir
 
 admin_user='system.admin'
 
-generate_JKS_client_cert "$admin_user"
+if [[ ! -f $dir/system.admin.jks || -z "$(keytool -list -keystore $dir/system.admin.jks -storepass kspass | grep sig-ca)" ]]; then
+  importPKCS "system.admin"
+  mv $dir/keystore.jks $dir/system.admin.jks
+fi
 
-# generate common node key for the SearchGuard plugin
-# we use a JKS chain for inter-node communication
-generate_JKS_chain true elasticsearch "$(join , logging-es{,-ops})"
-mv $dir/keystore.jks $dir/searchguard_node_key
-mv $dir/truststore.jks $dir/searchguard_node_truststore
+if [[ ! -f $dir/searchguard_node_key || -z "$(keytool -list -keystore $dir/searchguard_node_key -storepass kspass | grep sig-ca)" ]]; then
+  importPKCS "elasticsearch"
+  mv $dir/keystore.jks $dir/searchguard_node_key
+fi
 
-# generate java store/trust for the ES SearchGuard plugin
-generate_JKS_chain false logging-es "$(join , logging-es{,-ops}{,-cluster}{,.${PROJECT}.svc.cluster.local})"
+
+if [[ ! -f $dir/system.admin.jks || -z "$(keytool -list -keystore $dir/system.admin.jks -storepass kspass | grep sig-ca)" ]]; then
+  importPKCS "logging-es"
+fi
+
+[ ! -f $dir/truststore.jks ] && createTruststore
+
+[ ! -f $dir/searchguard_node_truststore ] && cp $dir/truststore.jks $dir/searchguard_node_truststore
+
+# necessary so that the job knows it completed successfully
+exit 0

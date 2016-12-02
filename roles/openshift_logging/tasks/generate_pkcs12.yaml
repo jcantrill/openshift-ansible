@@ -20,5 +20,5 @@
   become: no
 
 - name: Generating pkcs12 chain for {{component}}
-  command: openssl pkcs12 -export -out {{mktemp.stdout}}/{{component}}.pkcs12 -inkey {{mktemp.stdout}}/{{component}}.key -in {{mktemp.stdout}}/{{component}}.crt -certfile {{mktemp.stdout}}/ca.crt -nodes -password pass:pass
+  command: openssl pkcs12 -export -out {{generated_certs_dir}}/{{component}}.pkcs12 -inkey {{generated_certs_dir}}/{{component}}.key -in {{generated_certs_dir}}/{{component}}.crt -password pass:pass
   when: not pkcs_file.stat.exists
