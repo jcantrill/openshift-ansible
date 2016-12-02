@@ -1,0 +1,5 @@
+---
+- name: Run Diagnostic Checks
+  hosts: all
+  roles:
+  - openshift_diagnostics

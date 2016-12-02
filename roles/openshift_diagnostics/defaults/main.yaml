@@ -1,0 +1,18 @@
+---
+openshift_diagnostics_names:
+- aggregated_logging
+
+openshift:
+  common:
+    client_binary: /bin/oc
+
+logging_services:
+- "service/logging-es"
+- "service/logging-es-cluster"
+- "service/logging-kibana"
+- "service/logging-es-ops"
+- "service/logging-es-ops-cluster"
+- "service/logging-kibana-ops"
+
+openshift_diagnostics_messages: []
+#stdout_callback: dump_log_diagnostic_messages

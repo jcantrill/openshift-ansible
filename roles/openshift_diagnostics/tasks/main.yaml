@@ -1,0 +1,2 @@
+---
+- include: "{{role_path}}/tasks/aggregated_logging_diagnostic.yaml"

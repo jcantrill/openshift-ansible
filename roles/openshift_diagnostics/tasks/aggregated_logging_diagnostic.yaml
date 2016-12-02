@@ -1,0 +1,20 @@
+---
+- name: Retrieving services
+  command: >
+    {{ openshift.common.client_binary }} --config={{ openshift_diagnostics_kubeconfig }} -n {{openshift_logging_namespace}} get services -o name
+  register: found_logging_services
+
+- name: Check services
+  openshift_diagnostics_messages:
+      messages: "{{openshift_diagnostics_messages}}"
+      diag_level: 4
+      msg: "[AGL0217] Expected to find '{{obj_name}}' among the logging services for the project but did not."
+  with_items: "{{logging_services}}"
+  loop_control:
+    loop_var: obj_name
+  when: obj_name not in found_logging_services.stdout_lines
+
+- name: Dump Diagnostic Messages
+  debug:
+      msg: "dict(diag_level={{item['diag_level']}}, msg=\"{{item['msg']}}\")"
+  with_items: "{{openshift_diagnostic_messages}}"
