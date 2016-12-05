@@ -12,6 +12,7 @@
   failed_when: label_result.rc == 1 and 'exists' not in label_result.stderr
   when:
   - value is defined
+  - label_value.stdout is defined
   - label_value.stdout != value
   - unlabel is not defined or not unlabel
   - not ansible_check_mode

@@ -22,10 +22,11 @@
     - fluentd
   loop_control:
     loop_var: install_component
-        
+
 - name: Register API objects from generated templates
   shell: ls -d -1 {{mktemp.stdout}}/templates/* | sort
   register: logging_objects
+  check_mode: no
 
 - name: Creating API objects from generated templates
   command: >
