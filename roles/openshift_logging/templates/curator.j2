@@ -57,22 +57,22 @@ spec:
               value: "/etc/curator/keys/ca"
             -
               name: "CURATOR_DEFAULT_DAYS"
-              value: "{{curator_default_days}}"
+              value: "{{openshift_logging_curator_default_days}}"
             -
               name: "CURATOR_RUN_HOUR"
-              value: "{{curator_run_hour}}"
+              value: "{{openshift_logging_curator_run_hour}}"
             -
               name: "CURATOR_RUN_MINUTE"
-              value: "{{curator_run_minute}}"
+              value: "{{openshift_logging_curator_run_minute}}"
             -
               name: "CURATOR_RUN_TIMEZONE"
-              value: "{{curator_run_timezone}}"
+              value: "{{openshift_logging_curator_run_timezone}}"
             -
               name: "CURATOR_SCRIPT_LOG_LEVEL"
-              value: "{{curator_script_log_level}}"
+              value: "{{openshift_logging_curator_script_log_level}}"
             -
               name: "CURATOR_LOG_LEVEL"
-              value: "{{curator_log_level}}"
+              value: "{{openshift_logging_curator_log_level}}"
           volumeMounts:
             - name: certs
               mountPath: /etc/curator/keys

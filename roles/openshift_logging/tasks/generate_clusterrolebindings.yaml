@@ -4,9 +4,9 @@
   vars:
     acct_name: aggregated-logging-elasticsearch
     obj_name: rolebinding-reader
-    crb_usernames: ["system:serviceaccount:{{logging_namespace}}:{{acct_name}}"]
+    crb_usernames: ["system:serviceaccount:{{openshift_logging_namespace}}:{{acct_name}}"]
     subjects:
       - kind: ServiceAccount
         name: "{{acct_name}}"
-        namespace: "{{logging_namespace}}"
+        namespace: "{{openshift_logging_namespace}}"
   check_mode: no

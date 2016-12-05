@@ -6,7 +6,7 @@
 # daterx - the date regex that matches the .%Y.%m.%d at the end of the indices
 # we are interested in - the awk will strip that part off
 function get_list_of_proj_uuid_indices() {
-    curl -s --cacert $CA --key $KEY --cert $CERT https://$es_host:$es_port/_cat/indices | \
+    curl -s --cacert $CA --key $KEY --cert $CERT https://$openshift_logging_es_host:$openshift_logging_es_port/_cat/indices | \
         awk -v daterx='[.]20[0-9]{2}[.][0-1]?[0-9][.][0-9]{1,2}$' \
             '$3 !~ "^[.]" && $3 !~ "^project." && $3 ~ daterx {print gensub(daterx, "", "", $3)}' | \
         sort -u
@@ -39,4 +39,4 @@ echo Creating aliases for $count index patterns . . .
       echo "{\"add\":{\"index\":\"$proj.$uuid.*\",\"alias\":\"${PROJ_PREFIX}$proj.$uuid.*\"}}"
     done
   echo ']}'
-} | curl -s --cacert $CA --key $KEY --cert $CERT -XPOST -d @- "https://$es_host:$es_port/_aliases"
+} | curl -s --cacert $CA --key $KEY --cert $CERT -XPOST -d @- "https://$openshift_logging_es_host:$openshift_logging_es_port/_aliases"
