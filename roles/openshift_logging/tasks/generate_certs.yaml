@@ -102,58 +102,62 @@
   loop_control:
     loop_var: node_name
 
-#- shell: certs=""; for cert in $(echo logging-es{,-ops}); do certs=$certs,dns:$cert; done; echo $certs
+- shell: certs=""; for cert in $(echo logging-es{,-ops}); do certs=$certs,dns:$cert; done; echo $certs
+  register: elasticsearch_certs
+  check_mode: no
+
+- shell: certs=""; for cert in $(echo logging-es{,-ops}{,-cluster}{,.logging.svc.cluster.local}); do certs=$certs,dns:$cert; done; echo $certs
+  register: logging_es_certs
+  check_mode: no
+
+#- shell: index=2; certs=""; for cert in $(echo logging-es{,-ops}); do certs=$certs,DNS.$index=$cert; index=$(($index+1)); done; echo $certs
 #  register: elasticsearch_certs
 #  check_mode: no
 
-#- shell: certs=""; for cert in $(echo logging-es{,-ops}{,-cluster}{,.logging.svc.cluster.local}); do certs=$certs,dns:$cert; done; echo $certs
+#- shell: index=2; certs=""; for cert in $(echo logging-es{,-ops}{,-cluster}{,.logging.svc.cluster.local}); do certs=$certs,DNS.$index=$cert; index=$(($index+1)); done; echo $certs
 #  register: logging_es_certs
 #  check_mode: no
 
-- shell: index=2; certs=""; for cert in $(echo logging-es{,-ops}); do certs=$certs,DNS.$index=$cert; index=$(($index+1)); done; echo $certs
-  register: elasticsearch_certs
-
-- shell: index=2; certs=""; for cert in $(echo logging-es{,-ops}{,-cluster}{,.logging.svc.cluster.local}); do certs=$certs,DNS.$index=$cert; index=$(($index+1)); done; echo $certs
-  register: logging_es_certs
+- name: Generate PKCS12 chains
+#  include: generate_pkcs12.yaml component='system.admin'
+  include: generate_jks_chain.yaml component='system.admin'
 
 - name: Generate PKCS12 chains
-  include: generate_pkcs12.yaml component='system.admin'
-#  include: generate_jks_chain.yaml component='system.admin'
-
-- name: Generate PKCS12 chains
-  include: generate_pkcs12.yaml component={{node.name}} oid={{node.oid | default(False)}} chain_certs={{node.certs}}
-#   include: generate_jks_chain.yaml component={{node.name}} oid={{node.oid | default(False)}} chain_certs={{node.certs}}
+#  include: generate_pkcs12.yaml component={{node.name}} oid={{node.oid | default(False)}} chain_certs={{node.certs}}
+   include: generate_jks_chain.yaml component={{node.name}} oid={{node.oid | default(False)}} chain_certs={{node.certs}}
   with_items:
     - {name: 'elasticsearch', oid: True, certs: '{{elasticsearch_certs.stdout}}'}
     - {name: 'logging-es', certs: '{{logging_es_certs.stdout}}'}
   loop_control:
     loop_var: node
 
-- name: Copy jks script
-  copy:
-    src: generate-jks.sh
-    dest: "{{etcd_generated_certs_dir}}/logging"
+# This should be handled within the ES image instead... ---
+#- name: Copy jks script
+#  copy:
+#    src: generate-jks.sh
+#    dest: "{{etcd_generated_certs_dir}}/logging"
 
-- name: Generate JKS chains
-  template:
-    src: job.j2
-    dest: "{{mktemp.stdout}}/jks_job.yaml"
+#- name: Generate JKS chains
+#  template:
+#    src: job.j2
+#    dest: "{{mktemp.stdout}}/jks_job.yaml"
 
-- name: kick off job
-  shell: >
-    {{ openshift.common.client_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig create -f {{mktemp.stdout}}/jks_job.yaml -n {{logging_namespace}}
-  register: podoutput
+#- name: kick off job
+#  shell: >
+#    {{ openshift.common.client_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig create -f {{mktemp.stdout}}/jks_job.yaml -n {{logging_namespace}}
+#  register: podoutput
 
-- shell: >
-    echo {{podoutput.stdout}} | awk -v podname='\\\".*\\\"' '{print $2}'
-  register: podname
+#- shell: >
+#    echo {{podoutput.stdout}} | awk -v podname='\\\".*\\\"' '{print $2}'
+#  register: podname
 
-- action: shell >
-    {{ openshift.common.client_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig oc get pod/{{podname.stdout}} -o go-template='{{ '{{' }}index .status "phase"{{ '}}' }}' -n {{logging_namespace}}
-  register: result
-  until: result.stdout.find("Succeeded") != -1
-  retries: 5
-  delay: 10
+#- action: shell >
+#    {{ openshift.common.client_binary }} --config={{ mktemp.stdout }}/admin.kubeconfig oc get pod/{{podname.stdout}} -o go-template='{{ '{{' }}index .status "phase"{{ '}}' }}' -n {{logging_namespace}}
+#  register: result
+#  until: result.stdout.find("Succeeded") != -1
+#  retries: 5
+#  delay: 10
+# --- This should be handled within the ES image instead...
 
 - name: Generate proxy session
   shell: tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c 200
