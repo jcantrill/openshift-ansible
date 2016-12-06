@@ -37,7 +37,10 @@ spec:
           imagePullPolicy: Always
           resources:
             limits:
-              memory: "{{openshift_logging_es_instance_ram}}i"
+              memory: "{{es_memory_limit}}"
+{% if es_cpu_limit is defined and es_cpu_limit is not none %}
+              cpu: "{{es_cpu_limit}}"
+{% endif %}
             requests:
               memory: "512Mi"
           ports:
@@ -64,7 +67,7 @@ spec:
               value: "logging-{{es_cluster_name}}"
             -
               name: "INSTANCE_RAM"
-              value: "{{openshift_logging_es_instance_ram}}"
+              value: "{{openshift_logging_es_memory_limit}}"
             -
               name: "NODE_QUORUM"
               value: "{{es_node_quorum | int}}"

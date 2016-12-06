@@ -32,6 +32,16 @@ spec:
           name: "kibana"
           image: {{image}}
           imagePullPolicy: Always
+{% if (kibana_memory_limit is defined and kibana_memory_limit is not none) or (kibana_cpu_limit is defined and kibana_cpu_limit is not none) %}
+          resources:
+            limits:
+{% if kibana_cpu_limit is not none %}
+              cpu: "{{kibana_cpu_limit}}"
+{% endif %}
+{% if kibana_memory_limit is not none %}
+              memory: "{{kibana_memory_limit}}"
+{% endif %}
+{% endif %}
           env:
             - name: "ES_HOST"
               value: "{{es_host}}"
@@ -45,6 +55,16 @@ spec:
           name: "kibana-proxy"
           image: {{proxy_image}}
           imagePullPolicy: Always
+{% if (kibana_proxy_memory_limit is defined and kibana_proxy_memory_limit is not none) or (kibana_proxy_cpu_limit is defined and kibana_proxy_cpu_limit is not none) %}
+          resources:
+            limits:
+{% if kibana_proxy_cpu_limit is not none %}
+              cpu: "{{kibana_proxy_cpu_limit}}"
+{% endif %}
+{% if kibana_proxy_memory_limit is not none %}
+              memory: "{{kibana_proxy_memory_limit}}"
+{% endif %}
+{% endif %}
           ports:
             -
               name: "oaproxy"
