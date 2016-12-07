@@ -39,9 +39,8 @@ spec:
         - "--require_node_auth=true"
         - "--enable_client_encryption=true"
         - "--require_client_auth=true"
-        - "--keystore_file=/secret/cassandra.keystore"
+        - "--keystore_file=/secret/cassandra.pkcs12"
         - "--keystore_password_file=/secret/cassandra.keystore.password"
-        - "--truststore_file=/secret/cassandra.truststore"
         - "--truststore_password_file=/secret/cassandra.truststore.password"
         - "--cassandra_pem_file=/secret/cassandra.pem"
         env:

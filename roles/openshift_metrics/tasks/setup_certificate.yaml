@@ -31,18 +31,6 @@
     -password
     'file:{{ openshift_metrics_certs_dir }}/{{ component }}-keystore.pwd'
   when: not '{{ openshift_metrics_certs_dir }}/{{ component }}.pkcs12'|exists
-- name: create the {{ component }} keystore from the pkcs12 file
-  shell: >
-    p=$(< {{ openshift_metrics_certs_dir }}/{{ component }}-keystore.pwd)
-    &&
-    keytool -v -importkeystore
-    -srckeystore '{{ openshift_metrics_certs_dir }}/{{ component }}.pkcs12'
-    -srcstoretype PKCS12
-    -destkeystore '{{ openshift_metrics_certs_dir }}/{{ component }}.keystore'
-    -deststoretype JKS
-    -deststorepass "$p"
-    -srcstorepass "$p"
-  when: not '{{ openshift_metrics_certs_dir }}/{{ component }}.keystore'|exists
 - name: generate random password for the {{ component }} truststore
   shell: >
     tr -dc _A-Z-a-z-0-9 < /dev/urandom | head -c15
