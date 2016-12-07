@@ -27,10 +27,15 @@ to the list of persisted [node labels](https://docs.openshift.org/latest/install
 - openshift_logging_curator_run_timezone: The timezone that Curator uses for figuring out its run time. Defaults to 'UTC'.
 - openshift_logging_curator_script_log_level: The script log level for Curator. Defaults to 'INFO'.
 - openshift_logging_curator_log_level: The log level for the Curator process. Defaults to 'ERROR'.
+- openshift_logging_curator_cpu_limit: The amount of CPU to allocate to Curator. Default is '100m'.
+- openshift_logging_curator_memory_limit: The amount of memor to allocate to Curator. Unset if not specified.
 
 - openshift_logging_kibana_hostname: The Kibana hostname. Defaults to 'kibana.example.com'.
-- openshift_logging_kibana_ops_hostname: The Operations Kibana hostname. Defaults to 'kibana-ops.example.com'.
+- openshift_logging_kibana_cpu_limit: The amount of CPU to allocate to Kibana or unset if not specified.
+- openshift_logging_kibana_memory_limit: The amount of memory to allocate to Kibana or unset if not specified.
 - openshift_logging_kibana_proxy_debug: When "True", set the Kibana Proxy log level to DEBUG. Defaults to 'false'.
+- openshift_logging_kibana_proxy_cpu_limit: The amount of CPU to allocate to Kibana proxy or unset if not specified.
+- openshift_logging_kibana_proxy_memory_limit: The amount of memory to allocate to Kibana proxy or unset if not specified.
 
 - openshift_logging_fluentd_nodeselector: The node selector that the Fluentd daemonset uses to determine where to deploy to. Defaults to '"logging-infra-fluentd": "true"'.
 - openshift_logging_fluentd_cpu_limit: The CPU limit for Fluentd pods. Defaults to '100m'.
@@ -47,7 +52,8 @@ to the list of persisted [node labels](https://docs.openshift.org/latest/install
 - openshift_logging_es_client_key: The location of the client key Fluentd uses for openshift_logging_es_host. Defaults to '/etc/fluent/keys/key'.
 
 - openshift_logging_es_cluster_size: The number of ES cluster members. Defaults to '1'.
-- openshift_logging_es_instance_ram: The amount of RAM that should be assigned to ES. Defaults to '1024M'.
+- openshift_logging_es_cpu_limit:  The amount of CPU limit for the ES cluster.  Unused if not set
+- openshift_logging_es_memory_limit: The amount of RAM that should be assigned to ES. Defaults to '1024Mi'.
 - openshift_logging_es_pv_selector: A key/value map added to a PVC in order to select specific PVs.  Defaults to 'None'.
 - openshift_logging_es_pvc_dynamic: Whether or not to add the dynamic PVC annotation for any generated PVCs. Defaults to 'False'.
 - openshift_logging_es_pvc_size: The requested size for the ES PVCs, when not provided the role will not generate any PVCs. Defaults to '""'.
@@ -63,9 +69,15 @@ same as above for their non-ops counterparts, but apply to the OPS cluster insta
 - openshift_logging_es_ops_client_cert: /etc/fluent/keys/cert
 - openshift_logging_es_ops_client_key: /etc/fluent/keys/key
 - openshift_logging_es_ops_cluster_size: 1
-- openshift_logging_es_ops_instance_ram: 1024M
+- openshift_logging_es_ops_cpu_limit:  The amount of CPU limit for the ES cluster.  Unused if not set
+- openshift_logging_es_ops_memory_limit: 1024Mi
 - openshift_logging_es_ops_pvc_dynamic: False
 - openshift_logging_es_ops_pvc_size: ""
 - openshift_logging_es_ops_pvc_prefix: logging-es-ops
 - openshift_logging_es_ops_recover_after_time: 5m
 - openshift_logging_es_ops_storage_group: 65534
+- openshift_logging_kibana_ops_hostname: The Operations Kibana hostname. Defaults to 'kibana-ops.example.com'.
+- openshift_logging_kibana_ops_cpu_limit: The amount of CPU to allocate to Kibana or unset if not specified.
+- openshift_logging_kibana_ops_memory_limit: The amount of memory to allocate to Kibana or unset if not specified.
+- openshift_logging_kibana_ops_proxy_cpu_limit: The amount of CPU to allocate to Kibana proxy or unset if not specified.
+- openshift_logging_kibana_ops_proxy_memory_limit: The amount of memory to allocate to Kibana proxy or unset if not specified.
