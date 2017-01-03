@@ -1,7 +1,13 @@
 ---
 openshift_metrics_start_cluster: True
 openshift_metrics_install_metrics: True
+
+# Specify prefix for metrics components. e.g for "openshift/origin-metrics-deployer:v1.1"
+# set prefix "openshift/origin-".
 openshift_metrics_image_prefix: docker.io/openshift/origin-
+
+#Specify version for metrics components; e.g. for
+#  "openshift/origin-metrics-deployer:v1.1", set version "v1.1".
 openshift_metrics_image_version: latest
 openshift_metrics_master_url: https://kubernetes.default.svc.cluster.local
 openshift_metrics_project: openshift-infra
@@ -10,12 +16,15 @@ openshift_metrics_startup_timeout: 500
 openshift_metrics_certs_dir: "{{ openshift.common.config_base }}/master/metrics"
 
 openshift_metrics_hawkular_user_write_access: False
+
+#The number of replicas for Hawkular metrics.
 openshift_metrics_hawkular_replicas: 1
 openshift_metrics_hawkular_limits_memory: 2.5G
 openshift_metrics_hawkular_limits_cpu: null
 openshift_metrics_hawkular_requests_memory: 1.5G
 openshift_metrics_hawkular_requests_cpu: null
 
+#The number of Cassandra Nodes to deploy for the
 openshift_metrics_cassandra_nodes: 1
 openshift_metrics_cassandra_storage_type: emptydir
 openshift_metrics_cassandra_pv_prefix: metrics-cassandra

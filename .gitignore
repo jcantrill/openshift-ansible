@@ -21,3 +21,4 @@ multi_inventory.yaml
 ansible.cfg
 *.retry
 .vscode/*
+**/*.generated.md

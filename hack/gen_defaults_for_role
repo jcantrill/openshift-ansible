@@ -1,0 +1,116 @@
+#!/usr/bin/python
+import os
+import argparse
+from jinja2 import Environment,FileSystemLoader
+
+class Config(dict):
+
+    def __init__(self):
+        super.__init__(self)
+
+class ParserCallback(object):
+
+    '''Comment line without the comment delimiter '''
+    def comment(self, comment):
+        pass
+
+    def key(self, key):
+        pass
+
+    def value(self, value):
+        pass
+
+    def empty(self):
+        pass
+
+class VariablesCallback(ParserCallback):
+
+    def __init__(self):
+        ParserCallback.__init__(self)
+        self.__vars__ = []
+        self.__buffer__ = []
+        self.__key__ = None
+        self.__value = None
+
+    def variables(self):
+        return self.__vars__
+
+    def comment(self, comment):
+        self.__buffer__.append(comment.strip())
+
+    def key(self, key):
+        self.__key__ = key
+
+    def value(self, value):
+        self.__value__ = value
+        
+    def empty(self):
+        if self.__key__  != None:
+            self.__vars__.append(dict(
+                key=self.__key__,
+                value=self.__value__,
+                comments=' '.join(self.__buffer__)
+            ))
+        self.__buffer__ = []
+        self.__key__ = None
+        self.__value = None
+
+class Generator(object):
+
+    def __init__(self, role, outf, verbose):
+        self._callback = VariablesCallback()
+        self._dir_path=os.path.dirname(os.path.realpath(__file__))
+        self._role_path = '/'.join([self._dir_path,'..','roles',role])
+        self._outf = '/'.join([self._dir_path,'..','roles',role,outf])
+        self._verbose = verbose
+        self._log("initialized generator")
+
+    def _log(self, value):
+        if self._verbose:
+            print value
+
+    def _parse(self):
+        defaults_main = self._role_path + '/'.join(['','defaults','main.yaml'])
+        if not os.path.exists(defaults_main):
+            defaults_main = self._role_path + '/'.join(['','defaults','main.yml'])
+        self._log("parsing: " + defaults_main)
+        with open(defaults_main,'r') as f:
+            for line in f:
+                if line.startswith("---"):
+                    pass
+                elif line.startswith("#"):
+                    self._log("comment: " + line)
+                    self._callback.comment(line[1:].rstrip('\n'))
+                elif len(line.strip()) > 0:
+                    key = line.split(':')[0]
+                    value = line[len(key)+1:].rstrip('\n')
+                    self._log("key: " + key)
+                    self._callback.key(key)
+                    self._log("value: " + value)
+                    self._callback.value(value)
+                    self._callback.empty()
+
+    def generate(self):
+        self._parse()
+        self._dump()
+
+    def _dump(self):
+        env = Environment(loader=FileSystemLoader(self._dir_path + "/"+'templates'))
+        template = env.get_template('defaults.j2')
+        self._log("writing: " + self._outf)
+        with open(self._outf, 'w') as outf:
+            outf.write(template.render(variables=self._callback.variables()))
+
+if __name__ == "__main__":
+    DESCRIPTION = 'Parse defaults file for a role and generate a GitHub markdown document'
+    EPILOG = """This will parse the defaults/main.yaml for a role and generate a GitHub markdown document in the root 
+    folder of the role called 'readme_defaults.generated.md' Note:  Currently is only capable of handling
+    key value pairs; it will not parse lists or maps"""
+
+    parser = argparse.ArgumentParser(description=DESCRIPTION, epilog=EPILOG)
+    parser.add_argument('role', type=str, help='The role to parse')
+    parser.add_argument('--out', type=str, help='The file to produce. By default will be written to the role root directory', default='readme_defaults.generated.md')
+    parser.add_argument('--verbose',action='store_true')
+    args = parser.parse_args()
+    generator = Generator(args.role, args.out, args.verbose)
+    generator.generate()
