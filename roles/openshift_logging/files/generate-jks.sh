@@ -3,9 +3,9 @@ set -ex
 
 function generate_JKS_chain() {
     dir=${SCRATCH_DIR:-_output}
-    ADD_OID=$1
-    NODE_NAME=$2
-    CERT_NAMES=${3:-$NODE_NAME}
+    NODE_NAME=$1
+    CERT_NAMES=${2:-$NODE_NAME}
+    OPENSHIFT_OID=${3:-''}
     ks_pass=${KS_PASS:-kspass}
     ts_pass=${TS_PASS:-tspass}
     rm -rf $NODE_NAME
@@ -15,8 +15,8 @@ function generate_JKS_chain() {
         extension_names="${extension_names},dns:${name}"
     done
 
-    if [ "$ADD_OID" = true ]; then
-        extension_names="${extension_names},oid:1.2.3.4.5.5"
+    if [ -n "$OPENSHIFT_OID" ]; then
+        extension_names="${extension_names},oid:$OPENSHIFT_OID"
     fi
 
     echo Generating keystore and certificate for node $NODE_NAME
@@ -139,12 +139,7 @@ function createTruststore() {
 
   echo "Import CA to truststore for validating client certs"
 
-  keytool  \
-    -import \
-    -file $dir/ca.crt  \
-    -keystore $dir/truststore.jks   \
-    -storepass $ts_pass  \
-    -noprompt -alias sig-ca
+  keytool -import -file $dir/ca.crt -keystore $dir/truststore.jks -storepass $ts_pass -noprompt -alias sig-ca
 }
 
 dir="$CERT_DIR"
@@ -155,11 +150,11 @@ if [[ ! -f $dir/system.admin.jks || -z "$(keytool -list -keystore $dir/system.ad
 fi
 
 if [[ ! -f $dir/elasticsearch.jks || -z "$(keytool -list -keystore $dir/elasticsearch.jks -storepass kspass | grep sig-ca)" ]]; then
-  generate_JKS_chain true elasticsearch "$(join , logging-es{,-ops})"
+  generate_JKS_chain elasticsearch "$(join , logging-es{,-ops})" ${CERT_OID}
 fi
 
 if [[ ! -f $dir/logging-es.jks || -z "$(keytool -list -keystore $dir/logging-es.jks -storepass kspass | grep sig-ca)" ]]; then
-  generate_JKS_chain false logging-es "$(join , logging-es{,-ops}{,-cluster}{,.${PROJECT}.svc.cluster.local})"
+  generate_JKS_chain logging-es "$(join , logging-es{,-ops}{,-cluster}{,.${PROJECT}.svc.cluster.local})"
 fi
 
 [ ! -f $dir/truststore.jks ] && createTruststore

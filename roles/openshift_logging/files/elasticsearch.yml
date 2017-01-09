@@ -53,6 +53,7 @@ searchguard:
   authcz.admin_dn:
   - CN=system.admin,OU=OpenShift,O=Logging
   config_index_name: ".searchguard.${HOSTNAME}"
+  cert.oid: ${CERT_OID}
   ssl:
     transport:
       enabled: true

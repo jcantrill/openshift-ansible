@@ -66,6 +66,9 @@ spec:
               name: "CLUSTER_NAME"
               value: "logging-{{es_cluster_name}}"
             -
+              name: "CERT_OID"
+              value: "{{openshift_logging_oid}}"
+            -
               name: "INSTANCE_RAM"
               value: "{{openshift_logging_es_memory_limit}}"
             -
