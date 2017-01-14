@@ -7,6 +7,7 @@
     -o jsonpath='{.metadata.resourceVersion}' 
     -n {{namespace}}
   register: generation_init
+  failed_when: false
   changed_when: no
 
 - name: Applying {{file_name}}
