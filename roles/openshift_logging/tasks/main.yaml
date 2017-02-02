@@ -15,6 +15,7 @@
 - name: Ensuring ruamel.yaml package is on target
   command: yum install -y ruamel.yaml
   check_mode: no
+  tags: skip-task
 
 - name: Copy the admin client config(s)
   command: >
