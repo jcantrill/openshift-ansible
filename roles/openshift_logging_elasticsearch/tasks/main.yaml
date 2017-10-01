@@ -267,6 +267,13 @@
     es_deploy_name: "{{ openshift_logging_elasticsearch_deployment_name }}"
   when: openshift_logging_elasticsearch_deployment_name != ""
 
+- debug:
+    msg: "{{ _es_containers | to_nice_yaml }}"
+    verbosity: 2
+- debug:
+    msg: "{{_es_containers | default({})| attr('elasticsearch')|default({})|attr('securityContext')|to_nice_yaml}}"
+    verbosity: 2
+
 # DC
 - name: Set ES dc templates
   template:
@@ -282,6 +289,7 @@
     es_memory_limit: "{{ openshift_logging_elasticsearch_memory_limit }}"
     es_node_selector: "{{ openshift_logging_elasticsearch_nodeselector | default({}) }}"
     es_storage_groups: "{{ openshift_logging_elasticsearch_storage_group | default([]) }}"
+    es_container_security_context: "_es_containers | default({})| attr('elasticsearch')|default({})|attr('securityContext')"
     deploy_type: "{{ openshift_logging_elasticsearch_deployment_type }}"
     es_replicas: 1
 
